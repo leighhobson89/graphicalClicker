@@ -1,0 +1,685 @@
+:root {
+  --bg: #f6f7fb;
+  --panel: #ffffff;
+  --panelSolid: #ffffff;
+  --text: #111827;
+  --mutedText: #6b7280;
+  --border: rgba(17, 24, 39, 0.12);
+  --primary: #2563eb;
+  --primaryText: #ffffff;
+  --danger: #dc2626;
+  --shadow: 0 10px 28px rgba(0, 0, 0, 0.10);
+  --radius: 14px;
+
+  --tap: 48px;
+}
+
+:root[data-theme="light"] {
+  --bg: #f6f7fb;
+  --panel: #ffffff;
+  --panelSolid: #ffffff;
+  --text: #111827;
+  --mutedText: #6b7280;
+  --border: rgba(17, 24, 39, 0.12);
+  --primary: #2563eb;
+  --primaryText: #ffffff;
+}
+
+:root[data-theme="dark"] {
+  --bg: #0b1220;
+  --panel: rgba(255, 255, 255, 0.06);
+  --panelSolid: #161f2e;
+  --text: #e5e7eb;
+  --mutedText: #9ca3af;
+  --border: rgba(255, 255, 255, 0.14);
+  --primary: #60a5fa;
+  --primaryText: #0b1220;
+}
+
+:root[data-theme="forest"] {
+  --bg: #0b1a12;
+  --panel: rgba(255, 255, 255, 0.06);
+  --panelSolid: #162a1e;
+  --text: #e7f6ee;
+  --mutedText: #b8d9c8;
+  --border: rgba(255, 255, 255, 0.14);
+  --primary: #22c55e;
+  --primaryText: #05210f;
+}
+
+:root[data-theme="space"] {
+  --bg: #060714;
+  --panel: rgba(255, 255, 255, 0.06);
+  --panelSolid: #13152b;
+  --text: #eef2ff;
+  --mutedText: #c7d2fe;
+  --border: rgba(255, 255, 255, 0.14);
+  --primary: #a78bfa;
+  --primaryText: #080315;
+}
+
+:root[data-theme="frosty"] {
+  --bg: #061622;
+  --panel: rgba(255, 255, 255, 0.08);
+  --panelSolid: #0f2538;
+  --text: #e0f2fe;
+  --mutedText: #93c5fd;
+  --border: rgba(255, 255, 255, 0.16);
+  --primary: #38bdf8;
+  --primaryText: #03121a;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+  background: radial-gradient(1200px 900px at 15% 10%, rgba(255,255,255,0.08), transparent 55%), var(--bg);
+  color: var(--text);
+}
+
+.app {
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.appHeader, .appFooter {
+  padding: 16px clamp(14px, 4vw, 28px);
+}
+
+.appMain {
+  flex: 1;
+  padding: 0 clamp(14px, 4vw, 28px) 18px;
+  display: flex;
+  justify-content: center;
+}
+
+.brandTitle {
+  font-weight: 800;
+  letter-spacing: 0.2px;
+  font-size: 18px;
+}
+
+.brandSubtitle {
+  margin-top: 2px;
+  color: var(--mutedText);
+  font-size: 13px;
+}
+
+.panel {
+  width: min(1200px, 100%);
+  border: 1px solid var(--border);
+  background: var(--panel);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: clamp(14px, 3vw, 22px);
+}
+
+.footerText {
+  color: var(--mutedText);
+  font-size: 12px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 14px;
+}
+
+@media (min-width: 720px) {
+  .grid.cols2 { grid-template-columns: 1fr 1fr; }
+}
+
+.row {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.saveActions {
+  padding-top: 8px;
+  border-top: 1px solid var(--border);
+}
+
+.saveActions button {
+  font-size: 13px;
+  padding: 8px 14px;
+  min-height: 36px;
+}
+
+.h2 {
+  margin: 0 0 10px 0;
+  font-size: 18px;
+}
+
+.muted {
+  color: var(--mutedText);
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.control {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.label {
+  font-size: 13px;
+  color: var(--mutedText);
+}
+
+select {
+  min-height: var(--tap);
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--panelSolid);
+  color: var(--text);
+  padding: 0 12px;
+  font-size: 15px;
+  outline: none;
+}
+
+button {
+  min-height: var(--tap);
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text);
+  padding: 0 12px;
+  font-size: 15px;
+  outline: none;
+}
+
+button {
+  cursor: pointer;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+select option {
+  background: var(--panelSolid);
+  color: var(--text);
+}
+
+button.primary {
+  background: var(--primary);
+  color: var(--primaryText);
+  border-color: transparent;
+  font-weight: 700;
+}
+
+button.danger {
+  background: rgba(220, 38, 38, 0.10);
+  border-color: rgba(220, 38, 38, 0.30);
+  color: var(--text);
+}
+
+button:active {
+  transform: translateY(1px);
+}
+
+.gameHud {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.hudStats {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.pill {
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 8px 12px;
+  font-size: 13px;
+  color: var(--mutedText);
+}
+
+.canvasWrap {
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  overflow: hidden;
+  background: rgba(0, 0, 0, 0.10);
+}
+
+canvas {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 16 / 9;
+}
+
+@media (max-width: 640px) {
+  .panel {
+    padding: 12px;
+  }
+  
+  .appHeader, .appFooter {
+    padding: 10px 12px;
+  }
+  
+  .appMain {
+    padding: 0 10px 10px;
+  }
+  
+  .h2 {
+    font-size: 16px;
+    margin: 0 0 6px 0;
+  }
+  
+  .muted {
+    font-size: 12px;
+    line-height: 1.3;
+  }
+  
+  .grid {
+    gap: 10px;
+  }
+  
+  .row {
+    gap: 8px;
+  }
+  
+  .control {
+    gap: 4px;
+  }
+  
+  .label {
+    font-size: 12px;
+  }
+  
+  select, button {
+    font-size: 14px;
+    min-height: 44px;
+  }
+  
+  .gameHud {
+    margin-bottom: 8px;
+  }
+  
+  .hudStats {
+    gap: 8px;
+  }
+  
+  .pill {
+    padding: 6px 10px;
+    font-size: 12px;
+  }
+  
+  .brandTitle {
+    font-size: 16px;
+  }
+  
+  .brandSubtitle {
+    font-size: 11px;
+  }
+  
+  .footerText {
+    font-size: 10px;
+  }
+}
+
+/* Clicker Game Styles */
+.clickerLayout {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  height: 100%;
+}
+
+.topBar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+}
+
+.currencyDisplay {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.gemCount {
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--primary);
+  line-height: 1;
+}
+
+.gpsDisplay {
+  font-size: 14px;
+  color: var(--mutedText);
+}
+
+.mainClicker {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 20px 0;
+}
+
+.clickerButton {
+  position: relative;
+  width: min(200px, 60vw);
+  height: min(200px, 60vw);
+  border-radius: 50%;
+  background: linear-gradient(145deg, rgba(255,255,255,0.15), rgba(255,255,255,0.05));
+  border: 3px solid var(--primary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.1s ease, box-shadow 0.2s ease;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.3), inset 0 2px 8px rgba(255,255,255,0.1);
+  overflow: hidden;
+}
+
+.clickerButton:hover {
+  transform: scale(1.02);
+  box-shadow: 0 12px 40px rgba(0,0,0,0.4), inset 0 2px 8px rgba(255,255,255,0.15);
+}
+
+.clickerButton:active {
+  transform: scale(0.98);
+}
+
+.clickerImage {
+  width: 70%;
+  height: 70%;
+  pointer-events: none;
+  filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3));
+}
+
+.clickerImage svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.clickPower {
+  font-size: 14px;
+  color: var(--mutedText);
+  font-weight: 500;
+}
+
+/* Resource Tabs */
+.resourceTabs {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  flex-wrap: wrap;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.resourceTab {
+  padding: 8px 16px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--panelSolid);
+  color: var(--mutedText);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  min-height: auto;
+}
+
+.resourceTab:hover {
+  background: rgba(255,255,255,0.1);
+  border-color: var(--primary);
+}
+
+.resourceTab.active {
+  background: var(--primary);
+  color: var(--primaryText);
+  border-color: var(--primary);
+}
+
+/* Resource Display */
+.resourceDisplay {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  text-align: center;
+}
+
+.resourceCount {
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--primary);
+  line-height: 1;
+}
+
+.resourceRps {
+  font-size: 14px;
+  color: var(--mutedText);
+}
+
+.resourceClickPower {
+  font-size: 14px;
+  color: var(--mutedText);
+  font-weight: 500;
+}
+
+/* Clicker Row */
+.clickerRow {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 20px 0;
+}
+
+.clickerRow.hidden {
+  display: none;
+}
+
+.statsRow {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.statPill {
+  background: rgba(255,255,255,0.06);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 6px 14px;
+  font-size: 12px;
+  color: var(--mutedText);
+}
+
+.shopSection {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-height: 0;
+}
+
+.shopTitle {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.shopGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 10px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.upgradeCard {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  text-align: left;
+}
+
+.upgradeCard:hover {
+  background: rgba(255,255,255,0.1);
+  transform: translateY(-2px);
+}
+
+.upgradeCard.affordable {
+  border-color: var(--primary);
+}
+
+.upgradeCard.locked:hover {
+  transform: none;
+  background: rgba(255,255,255,0.06);
+}
+
+.upgradeIcon {
+  width: 48px;
+  height: 48px;
+  flex-shrink: 0;
+  background: var(--panelSolid);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.upgradeIcon svg {
+  width: 36px;
+  height: 36px;
+  object-fit: contain;
+  filter: drop-shadow(0 1px 2px rgba(0,0,0,0.2));
+}
+
+.upgradeInfo {
+  flex: 1;
+  min-width: 0;
+}
+
+.upgradeName {
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--text);
+  margin-bottom: 2px;
+}
+
+.upgradeDesc {
+  font-size: 12px;
+  color: var(--mutedText);
+}
+
+.upgradeOwned {
+  font-size: 11px;
+  color: var(--primary);
+  margin-top: 2px;
+}
+
+.upgradeCost {
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--primary);
+  white-space: nowrap;
+}
+
+.upgradeCard.locked .upgradeCost {
+  color: var(--mutedText);
+}
+
+/* Floating Text Animation */
+#floatingTextContainer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 1000;
+}
+
+.floatingText {
+  position: absolute;
+  font-weight: 700;
+  font-size: 18px;
+  color: var(--primary);
+  text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+  transition: transform 0.8s ease-out, opacity 0.8s ease-out;
+  pointer-events: none;
+}
+
+/* Ripple Effect */
+.ripple {
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  background: rgba(255,255,255,0.4);
+  border-radius: 50%;
+  transform: translate(-50%, -50%) scale(0);
+  animation: rippleExpand 0.6s ease-out forwards;
+  pointer-events: none;
+}
+
+@keyframes rippleExpand {
+  to {
+    transform: translate(-50%, -50%) scale(15);
+    opacity: 0;
+  }
+}
+
+/* Mobile adjustments for clicker */
+@media (max-width: 640px) {
+  .clickerLayout {
+    gap: 12px;
+  }
+  
+  .gemCount {
+    font-size: 24px;
+  }
+  
+  .clickerButton {
+    width: min(160px, 50vw);
+    height: min(160px, 50vw);
+  }
+  
+  .shopGrid {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+  
+  .upgradeCard {
+    padding: 10px;
+  }
+  
+  .upgradeIcon {
+    width: 40px;
+    height: 40px;
+  }
+  
+  .upgradeIcon svg {
+    width: 30px;
+    height: 30px;
+  }
+}

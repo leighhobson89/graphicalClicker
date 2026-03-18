@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64">
+  <rect width="64" height="64" fill="var(--primary)" rx="12" opacity="0.2"/>
+  <!-- Pan -->
+  <ellipse cx="32" cy="40" rx="24" ry="12" fill="var(--primary)" opacity="0.5" stroke="var(--primary)" stroke-width="2"/>
+  <ellipse cx="32" cy="38" rx="20" ry="9" fill="var(--primary)" opacity="0.3"/>
+  <!-- Handle -->
+  <rect x="52" y="36" width="12" height="6" fill="var(--primary)" opacity="0.7" rx="2"/>
+  <!-- Gold flecks -->
+  <circle cx="24" cy="40" r="3" fill="var(--primaryText)" opacity="0.8"/>
+  <circle cx="32" cy="42" r="2" fill="var(--primaryText)" opacity="0.7"/>
+  <circle cx="38" cy="38" r="2.5" fill="var(--primaryText)" opacity="0.8"/>
+  <circle cx="28" cy="36" r="1.5" fill="var(--primaryText)" opacity="0.6"/>
+</svg>

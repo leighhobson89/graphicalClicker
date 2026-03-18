@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128">
+  <defs>
+    <radialGradient id="stoneGrad" cx="40%" cy="40%">
+      <stop offset="0%" stop-color="var(--primary)" stop-opacity="0.8"/>
+      <stop offset="100%" stop-color="var(--primary)" stop-opacity="0.4"/>
+    </radialGradient>
+  </defs>
+  <!-- Stone shape -->
+  <path d="M24 40 L40 20 L88 24 L108 48 L104 88 L72 108 L32 96 L20 64 Z" fill="url(#stoneGrad)" stroke="var(--primary)" stroke-width="2" stroke-linejoin="round"/>
+  <!-- Stone texture/cracks -->
+  <path d="M40 40 L55 55" stroke="var(--primary)" stroke-width="1.5" opacity="0.5" stroke-linecap="round"/>
+  <path d="M72 35 L85 52" stroke="var(--primary)" stroke-width="1.5" opacity="0.5" stroke-linecap="round"/>
+  <path d="M48 72 L62 82" stroke="var(--primary)" stroke-width="1.5" opacity="0.5" stroke-linecap="round"/>
+  <path d="M80 68 L90 78" stroke="var(--primary)" stroke-width="1.5" opacity="0.5" stroke-linecap="round"/>
+  <!-- Highlight -->
+  <ellipse cx="50" cy="35" rx="8" ry="5" fill="rgba(255,255,255,0.2)" transform="rotate(-20 50 35)"/>
+</svg>

@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64">
+  <defs>
+    <linearGradient id="goldMineGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="var(--primary)" stop-opacity="0.8"/>
+      <stop offset="100%" stop-color="var(--primary)" stop-opacity="0.3"/>
+    </linearGradient>
+  </defs>
+  <rect width="64" height="64" fill="url(#goldMineGrad)" rx="12"/>
+  <!-- Mine entrance -->
+  <path d="M16 52 L20 32 L32 24 L44 32 L48 52 Z" fill="var(--primary)" opacity="0.6" stroke="var(--primary)" stroke-width="2"/>
+  <!-- Tunnel depth -->
+  <path d="M22 48 L24 36 L32 30 L40 36 L42 48 Z" fill="var(--panelSolid)" opacity="0.7"/>
+  <!-- Support beams -->
+  <line x1="20" y1="32" x2="20" y2="52" stroke="var(--primary)" stroke-width="3" opacity="0.9"/>
+  <line x1="44" y1="32" x2="44" y2="52" stroke="var(--primary)" stroke-width="3" opacity="0.9"/>
+  <line x1="20" y1="38" x2="44" y2="38" stroke="var(--primary)" stroke-width="2" opacity="0.8"/>
+  <!-- Gold sparkle -->
+  <circle cx="32" cy="40" r="4" fill="var(--primaryText)" opacity="0.9"/>
+  <circle cx="26" cy="34" r="2" fill="var(--primaryText)" opacity="0.6"/>
+</svg>

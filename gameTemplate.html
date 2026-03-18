@@ -1,0 +1,73 @@
+<div class="clickerLayout">
+  <div class="topBar">
+    <button id="btnMenu" type="button" class="danger" data-i18n="menuButton">Menu</button>
+  </div>
+  
+  <div class="resourceTabs">
+    <button class="resourceTab active" data-resource="gems" data-i18n="tabGems">Gems</button>
+    <button class="resourceTab" data-resource="wood" data-i18n="tabWood">Wood</button>
+    <button class="resourceTab" data-resource="stone" data-i18n="tabStone">Stone</button>
+    <button class="resourceTab" data-resource="gold" data-i18n="tabGold">Gold</button>
+  </div>
+  
+  <div class="mainClicker">
+    <div class="clickerRow" id="gemsClicker">
+      <div class="resourceDisplay">
+        <div class="resourceCount" id="gemsCount">0</div>
+        <div class="resourceRps" id="gemsRps">+0/s</div>
+      </div>
+      <div class="clickerButton" id="clickerGems">
+        <div class="clickerImage" data-svg="images/clickerGems.svg"></div>
+        <div class="clickRipple"></div>
+      </div>
+      <div class="resourceClickPower" id="gemsPowerDisplay">+1 per click</div>
+    </div>
+    
+    <div class="clickerRow hidden" id="woodClicker">
+      <div class="resourceDisplay">
+        <div class="resourceCount" id="woodCount">0</div>
+        <div class="resourceRps" id="woodRps">+0/s</div>
+      </div>
+      <div class="clickerButton" id="clickerWood">
+        <div class="clickerImage" data-svg="images/clickerWood.svg"></div>
+        <div class="clickRipple"></div>
+      </div>
+      <div class="resourceClickPower" id="woodPowerDisplay">+1 per click</div>
+    </div>
+    
+    <div class="clickerRow hidden" id="stoneClicker">
+      <div class="resourceDisplay">
+        <div class="resourceCount" id="stoneCount">0</div>
+        <div class="resourceRps" id="stoneRps">+0/s</div>
+      </div>
+      <div class="clickerButton" id="clickerStone">
+        <div class="clickerImage" data-svg="images/clickerStone.svg"></div>
+        <div class="clickRipple"></div>
+      </div>
+      <div class="resourceClickPower" id="stonePowerDisplay">+1 per click</div>
+    </div>
+    
+    <div class="clickerRow hidden" id="goldClicker">
+      <div class="resourceDisplay">
+        <div class="resourceCount" id="goldCount">0</div>
+        <div class="resourceRps" id="goldRps">+0/s</div>
+      </div>
+      <div class="clickerButton" id="clickerGold">
+        <div class="clickerImage" data-svg="images/clickerGold.svg"></div>
+        <div class="clickRipple"></div>
+      </div>
+      <div class="resourceClickPower" id="goldPowerDisplay">+1 per click</div>
+    </div>
+  </div>
+  
+  <div class="statsRow">
+    <div class="statPill" id="totalClicks">0 clicks</div>
+    <div class="statPill" id="totalEarned">0 earned</div>
+  </div>
+  
+  <div class="shopSection">
+    <h3 class="shopTitle" data-i18n="shopTitle">Upgrades</h3>
+    <div class="shopGrid" id="shopGrid"></div>
+  </div>
+</div>
+<div id="floatingTextContainer"></div>

@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Modular Clicker</title>
+  <link rel="stylesheet" href="./style.css" />
+</head>
+<body>
+  <div id="app" class="app">
+    <main class="appMain">
+      <!-- UI is rendered into these containers by ui.js -->
+      <section id="menuRoot" class="panel" aria-label="Menu"></section>
+      <section id="gameRoot" class="panel" aria-label="Game" hidden></section>
+    </main>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/lz-string@1.5.0/libs/lz-string.min.js"></script>
+  <script type="module" src="./gameloop.js"></script>
+</body>
+</html>

@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64">
+  <defs>
+    <linearGradient id="saplingGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="var(--primary)" stop-opacity="0.8"/>
+      <stop offset="100%" stop-color="var(--primary)" stop-opacity="0.4"/>
+    </linearGradient>
+  </defs>
+  <rect width="64" height="64" fill="url(#saplingGrad)" rx="12"/>
+  <!-- Trunk -->
+  <rect x="30" y="32" width="4" height="24" fill="var(--primary)" opacity="0.8"/>
+  <!-- Leaves -->
+  <circle cx="32" cy="24" r="12" fill="var(--primary)" opacity="0.7"/>
+  <circle cx="24" cy="28" r="8" fill="var(--primary)" opacity="0.6"/>
+  <circle cx="40" cy="28" r="8" fill="var(--primary)" opacity="0.6"/>
+  <circle cx="32" cy="16" r="6" fill="var(--primaryText)" opacity="0.5"/>
+</svg>
