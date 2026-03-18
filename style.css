@@ -953,6 +953,7 @@ canvas {
 .vehicle {
   position: absolute;
   pointer-events: auto;
+  transition: transform 0.3s ease-out;
 }
 
 .vehicle svg {

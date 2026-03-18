@@ -441,6 +441,64 @@ export const UI = {
     
     this.carAnimationRunning = true;
     this.activeCars = [];
+    this.nextVehicleId = 1;
+
+    const getAdjacentLane = (lane) => (lane % 2 === 0 ? lane + 1 : lane - 1);
+    const rangesOverlap = (aStart, aEnd, bStart, bEnd) => aStart < bEnd && bStart < aEnd;
+
+    const isLaneClearForVehicle = (lane, x, width, ignoreId) => {
+      const buffer = 20;
+      const aStart = x - buffer;
+      const aEnd = x + width + buffer;
+
+      for (const other of this.activeCars) {
+        if (other.id === ignoreId) continue;
+        if (other.lane !== lane) continue;
+
+        const bStart = other.x;
+        const bEnd = other.x + other.width;
+        if (rangesOverlap(aStart, aEnd, bStart, bEnd)) return false;
+      }
+
+      return true;
+    };
+
+    const moveVehicleToLane = (car, newLane) => {
+      if (car.isChangingLane) return false;
+      
+      const newContainer = document.getElementById(`lane${newLane}Container`);
+      const oldContainer = document.getElementById(`lane${car.lane}Container`);
+      if (!newContainer || !oldContainer) return false;
+
+      car.isChangingLane = true;
+      car.targetLane = newLane;
+
+      const oldRect = oldContainer.getBoundingClientRect();
+      const newRect = newContainer.getBoundingClientRect();
+      const yOffset = newRect.top - oldRect.top;
+
+      car.el.style.transition = 'transform 0.3s ease-out';
+      const currentTransform = car.el.style.transform || '';
+      const baseTransform = currentTransform.replace(/translateY\([^)]+\)/g, '').trim();
+      car.el.style.transform = `${baseTransform} translateY(${yOffset}px)`;
+
+      setTimeout(() => {
+        if (!car.el || !car.el.isConnected) {
+          car.isChangingLane = false;
+          return;
+        }
+        
+        car.lane = newLane;
+        car.el.style.transition = 'none';
+        car.el.style.transform = baseTransform;
+        newContainer.appendChild(car.el);
+        car.lastLaneChangeX = car.x;
+        car.isChangingLane = false;
+        car.targetLane = null;
+      }, 300);
+
+      return true;
+    };
     
     const animate = () => {
       if (!this.carAnimationRunning) return;
@@ -465,42 +523,109 @@ export const UI = {
 
         if (direction === 1) {
           sorted.reverse();
-          let frontX = null;
+          let frontCar = null;
           const buffer = 20;
 
           for (const car of sorted) {
-            const desiredDx = car.speed;
+            const desiredDx = car.baseSpeed;
             let nextX = car.x + desiredDx;
+            let blockedBy = null;
 
-            if (frontX !== null) {
-              const maxX = frontX - (car.width + buffer);
+            if (frontCar) {
+              const maxX = frontCar.x - (car.width + buffer);
               nextX = Math.min(nextX, maxX);
               if (nextX < car.x) nextX = car.x;
+
+              if (nextX < car.x + desiredDx - 0.001) blockedBy = frontCar;
             }
 
             car.currentSpeed = (nextX - car.x);
             car.x = nextX;
-            frontX = car.x;
+
+            if (blockedBy) {
+              const adjacentLane = getAdjacentLane(car.lane);
+              const wantsOvertake = car.lane === car.originalLane;
+              const distanceSinceChange = Math.abs((car.lastLaneChangeX ?? car.x) - car.x);
+              const canTryChange = (car.lastLaneChangeX == null) || distanceSinceChange > 60;
+
+              if (wantsOvertake && canTryChange && isLaneClearForVehicle(adjacentLane, car.x, car.width, car.id)) {
+                if (moveVehicleToLane(car, adjacentLane)) {
+                  car.overtakeTargetId = blockedBy.id;
+                  car.overtakeTargetLane = car.originalLane;
+                }
+              }
+            } else if (car.lane !== car.originalLane) {
+              const adjacentLane = getAdjacentLane(car.lane);
+              const mergeLane = car.originalLane;
+              const distanceSinceChange = Math.abs((car.lastLaneChangeX ?? car.x) - car.x);
+              const canTryMerge = (car.lastLaneChangeX == null) || distanceSinceChange > 60;
+
+              let passedTarget = true;
+              if (car.overtakeTargetId) {
+                const target = this.activeCars.find(c => c.id === car.overtakeTargetId);
+                if (target && target.lane === mergeLane) {
+                  passedTarget = car.x > (target.x + target.width + 10);
+                }
+              }
+
+              if (canTryMerge && passedTarget && isLaneClearForVehicle(mergeLane, car.x, car.width, car.id)) {
+                moveVehicleToLane(car, mergeLane);
+              }
+            }
+
+            frontCar = car;
           }
         } else {
-          let frontX = null;
-          let frontWidth = null;
+          let frontCar = null;
           const buffer = 20;
 
           for (const car of sorted) {
-            const desiredDx = car.speed;
+            const desiredDx = car.baseSpeed;
             let nextX = car.x - desiredDx;
+            let blockedBy = null;
 
-            if (frontX !== null) {
-              const minX = frontX + (frontWidth + buffer);
+            if (frontCar) {
+              const minX = frontCar.x + (frontCar.width + buffer);
               nextX = Math.max(nextX, minX);
               if (nextX > car.x) nextX = car.x;
+
+              if (nextX > car.x - desiredDx + 0.001) blockedBy = frontCar;
             }
 
             car.currentSpeed = (car.x - nextX);
             car.x = nextX;
-            frontX = car.x;
-            frontWidth = car.width;
+
+            if (blockedBy) {
+              const adjacentLane = getAdjacentLane(car.lane);
+              const wantsOvertake = car.lane === car.originalLane;
+              const distanceSinceChange = Math.abs((car.lastLaneChangeX ?? car.x) - car.x);
+              const canTryChange = (car.lastLaneChangeX == null) || distanceSinceChange > 60;
+
+              if (wantsOvertake && canTryChange && isLaneClearForVehicle(adjacentLane, car.x, car.width, car.id)) {
+                if (moveVehicleToLane(car, adjacentLane)) {
+                  car.overtakeTargetId = blockedBy.id;
+                  car.overtakeTargetLane = car.originalLane;
+                }
+              }
+            } else if (car.lane !== car.originalLane) {
+              const mergeLane = car.originalLane;
+              const distanceSinceChange = Math.abs((car.lastLaneChangeX ?? car.x) - car.x);
+              const canTryMerge = (car.lastLaneChangeX == null) || distanceSinceChange > 60;
+
+              let passedTarget = true;
+              if (car.overtakeTargetId) {
+                const target = this.activeCars.find(c => c.id === car.overtakeTargetId);
+                if (target && target.lane === mergeLane) {
+                  passedTarget = (car.x + car.width) < (target.x - 10);
+                }
+              }
+
+              if (canTryMerge && passedTarget && isLaneClearForVehicle(mergeLane, car.x, car.width, car.id)) {
+                moveVehicleToLane(car, mergeLane);
+              }
+            }
+
+            frontCar = car;
           }
         }
       }
@@ -579,14 +704,20 @@ export const UI = {
     
     laneContainer.appendChild(carEl);
     
+    const assignedId = this.nextVehicleId++;
     this.activeCars.push({
+      id: assignedId,
       el: carEl,
       x: x,
       width: type.width,
       height: type.height,
-      speed: type.speed * (0.9 + Math.random() * 0.2),
+      baseSpeed: type.speed * (0.9 + Math.random() * 0.2),
       direction: type.direction,
       lane: type.lane,
+      originalLane: type.lane,
+      lastLaneChangeX: null,
+      overtakeTargetId: null,
+      overtakeTargetLane: null,
       type: type.type
     });
   },
