@@ -1,0 +1,17 @@
+<svg viewBox="0 0 30 35" xmlns="http://www.w3.org/2000/svg">
+  <!-- Sports car - blue -->
+  <g fill="#3498db" stroke="#2980b9" stroke-width="1">
+    <!-- Body -->
+    <path d="M1 25 L3 16 L11 12 L24 12 L29 16 L30 25 L30 29 L28 30 L25 30 L23 26 L7 26 L5 30 L2 30 L1 29 Z"/>
+    <!-- Windows -->
+    <path fill="#2c3e50" d="M4 17 L10 14 L10 21 L3 22 Z"/>
+    <path fill="#2c3e50" d="M12 14 L22 14 L27 19 L12 21 Z"/>
+    <!-- Wheels -->
+    <circle cx="6" cy="30" r="4" fill="#2c3e50"/>
+    <circle cx="24" cy="30" r="4" fill="#2c3e50"/>
+    <!-- Headlights -->
+    <ellipse cx="29" cy="19" rx="2" ry="2" fill="#f1c40f"/>
+    <!-- Stripe -->
+    <path fill="#ecf0f1" d="M14 24 L22 24 L23 26 L14 26 Z" opacity="0.5"/>
+  </g>
+</svg>

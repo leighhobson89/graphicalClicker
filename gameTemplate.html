@@ -8,6 +8,8 @@
     <button class="resourceTab" data-resource="wood" data-i18n="tabWood">Wood</button>
     <button class="resourceTab" data-resource="stone" data-i18n="tabStone">Stone</button>
     <button class="resourceTab" data-resource="gold" data-i18n="tabGold">Gold</button>
+    <button class="resourceTab" data-resource="fish" data-i18n="tabFish">Fish</button>
+    <button class="resourceTab" data-resource="cars" data-i18n="tabCars">Cars</button>
   </div>
   
   <div class="mainClicker">
@@ -58,14 +60,56 @@
       </div>
       <div class="resourceClickPower" id="goldPowerDisplay">+1 per click</div>
     </div>
+    
+    <div class="clickerRow hidden" id="fishClicker">
+      <div class="fishRiverArea">
+        <div class="fishRiverHeader">
+          <span class="fishCountDisplay" id="fishCount">0</span>
+          <span class="fishLabel" data-i18n="fishCount">Fish</span>
+        </div>
+        <div class="fishRiver" id="fishRiver">
+          <div class="grassTop"></div>
+          <div class="riverWater">
+            <div class="fishContainer" id="fishContainer"></div>
+          </div>
+          <div class="grassBottom"></div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="clickerRow hidden" id="carsClicker">
+      <div class="roadArea">
+        <div class="roadHeader">
+          <span class="carsCountDisplay" id="carsCount">0</span>
+          <span class="carsLabel" data-i18n="carsCount">Cars</span>
+        </div>
+        <div class="road" id="road">
+          <div class="roadLane" data-lane="0">
+            <div class="vehicleContainer" id="lane0Container"></div>
+          </div>
+          <div class="roadLane" data-lane="1">
+            <div class="laneMarking"></div>
+            <div class="vehicleContainer" id="lane1Container"></div>
+          </div>
+          <div class="roadDivider"></div>
+          <div class="roadLane" data-lane="2">
+            <div class="vehicleContainer" id="lane2Container"></div>
+          </div>
+          <div class="roadLane" data-lane="3">
+            <div class="laneMarking"></div>
+            <div class="vehicleContainer" id="lane3Container"></div>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
   
-  <div class="statsRow">
+  <div class="statsRow" id="statsRow">
     <div class="statPill" id="totalClicks">0 clicks</div>
     <div class="statPill" id="totalEarned">0 earned</div>
   </div>
   
-  <div class="shopSection">
+  <div class="shopSection" id="shopSection">
     <h3 class="shopTitle" data-i18n="shopTitle">Upgrades</h3>
     <div class="shopGrid" id="shopGrid"></div>
   </div>

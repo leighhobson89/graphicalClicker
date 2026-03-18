@@ -1,0 +1,15 @@
+<svg viewBox="0 0 30 35" xmlns="http://www.w3.org/2000/svg">
+  <!-- Small sedan - red -->
+  <g fill="#e74c3c" stroke="#c0392b" stroke-width="1">
+    <!-- Body -->
+    <path d="M1 25 L4 16 L13 12 L23 12 L29 16 L30 25 L30 29 L28 30 L25 30 L23 26 L8 26 L5 30 L3 30 L1 29 Z"/>
+    <!-- Windows -->
+    <path fill="#3498db" d="M5 17 L12 14 L12 21 L4 22 Z"/>
+    <path fill="#3498db" d="M14 14 L22 14 L26 19 L14 21 Z"/>
+    <!-- Wheels -->
+    <circle cx="6" cy="30" r="4" fill="#2c3e50"/>
+    <circle cx="24" cy="30" r="4" fill="#2c3e50"/>
+    <!-- Headlights -->
+    <ellipse cx="29" cy="19" rx="2" ry="2" fill="#f1c40f"/>
+  </g>
+</svg>

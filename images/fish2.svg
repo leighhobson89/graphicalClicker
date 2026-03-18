@@ -1,0 +1,23 @@
+<svg viewBox="0 0 64 32" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="fish2Grad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#4ECDC4"/>
+      <stop offset="100%" style="stop-color:#44A08D"/>
+    </linearGradient>
+  </defs>
+  <!-- Medium striped fish -->
+  <g fill="url(#fish2Grad)" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round">
+    <!-- Body -->
+    <ellipse cx="32" cy="16" rx="22" ry="10"/>
+    <!-- Tail -->
+    <path d="M10 16 L2 6 L2 26 Z"/>
+    <!-- Eye -->
+    <circle cx="46" cy="13" r="2.5" fill="currentColor"/>
+    <!-- Stripes -->
+    <path d="M25 8 L25 24 M32 7 L32 25 M39 8 L39 24" stroke-width="2" opacity="0.3"/>
+    <!-- Fin top -->
+    <path d="M30 6 L34 2 L38 6 Z" fill="currentColor"/>
+    <!-- Fin bottom -->
+    <path d="M30 26 L34 30 L38 26 Z" fill="currentColor"/>
+  </g>
+</svg>

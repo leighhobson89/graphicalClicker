@@ -1,4 +1,4 @@
-import { globals, clickResource as doClickResource, click as doClick, tickGameLogic as doTick, buyUpgrade, getUpgradeCost, canAffordUpgrade, upgrades, getUpgradesByResource } from "./constantsAndGlobalVariables.js";
+import { globals, clickResource as doClickResource, click as doClick, tickGameLogic as doTick, buyUpgrade, getUpgradeCost, canAffordUpgrade, upgrades, getUpgradesByResource, catchFish, catchCar } from "./constantsAndGlobalVariables.js";
 
 export function tickGameLogic(dtSeconds) {
   doTick(dtSeconds);
@@ -10,6 +10,14 @@ export function performClick(resourceType = 'gems') {
 
 export function purchaseUpgrade(upgradeId) {
   return buyUpgrade(upgradeId);
+}
+
+export function catchFishGame() {
+  return catchFish();
+}
+
+export function catchCarGame() {
+  return catchCar();
 }
 
 export function checkCanAfford(upgradeId) {
@@ -37,6 +45,10 @@ export function getHudSnapshot() {
     gold: allData.gold.amount,
     goldPerSecond: allData.gold.rps,
     totalGoldEarned: allData.gold.total,
+    fish: allData.fish.amount,
+    totalFishEarned: allData.fish.total,
+    cars: allData.cars.amount,
+    totalCarsEarned: allData.cars.total,
     totalClicks: globals.getTotalClicks(),
     upgrades: Object.values(upgradesData).map(u => ({
       id: u.id,

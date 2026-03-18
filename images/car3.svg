@@ -1,0 +1,17 @@
+<svg viewBox="0 0 30 35" xmlns="http://www.w3.org/2000/svg">
+  <!-- SUV - green -->
+  <g fill="#27ae60" stroke="#1e8449" stroke-width="1">
+    <!-- Body -->
+    <path d="M1 28 L3 12 L11 8 L24 8 L29 12 L30 28 L30 32 L28 34 L24 34 L22 30 L8 30 L6 34 L2 34 L1 32 Z"/>
+    <!-- Windows -->
+    <path fill="#34495e" d="M4 14 L10 10 L10 22 L3 22 Z"/>
+    <path fill="#34495e" d="M12 10 L23 10 L28 14 L28 22 L12 22 Z"/>
+    <!-- Wheels -->
+    <circle cx="6" cy="34" r="4" fill="#2c3e50"/>
+    <circle cx="24" cy="34" r="4" fill="#2c3e50"/>
+    <!-- Headlights -->
+    <ellipse cx="29" cy="16" rx="2" ry="3" fill="#f1c40f"/>
+    <!-- Roof rack -->
+    <path fill="none" stroke="#2c3e50" stroke-width="2" d="M11 6 L24 6"/>
+  </g>
+</svg>

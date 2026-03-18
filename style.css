@@ -683,3 +683,320 @@ canvas {
     height: 30px;
   }
 }
+
+/* Fish River Section */
+#fishClicker {
+  display: none;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+}
+
+#fishClicker:not(.hidden) {
+  display: flex;
+}
+
+.fishRiverArea {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  gap: 10px;
+  width: 800px;
+  max-width: 800px;
+}
+
+.fishRiverHeader {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+}
+
+.fishCountDisplay {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--primary);
+}
+
+.fishLabel {
+  font-size: 16px;
+  color: var(--mutedText);
+  font-weight: 500;
+}
+
+.fishRiver {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  border-radius: 12px;
+  overflow: hidden;
+  min-height: 250px;
+  position: relative;
+}
+
+.grassTop, .grassBottom {
+  height: 20px;
+  background: linear-gradient(180deg, #4a7c59 0%, #3d6b4a 100%);
+  position: relative;
+}
+
+.grassTop::after, .grassBottom::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 8px;
+  background: repeating-linear-gradient(
+    90deg,
+    #2d5a3d 0px,
+    #2d5a3d 4px,
+    #3d6b4a 4px,
+    #3d5a3a 8px
+  );
+}
+
+.grassTop::after {
+  bottom: 0;
+}
+
+.grassBottom::after {
+  top: 0;
+}
+
+.riverWater {
+  flex: 1;
+  background: linear-gradient(180deg,
+    #4a90d9 0%,
+    #357abd 30%,
+    #2e6da3 70%,
+    #4a90d9 100%
+  );
+  position: relative;
+  overflow: hidden;
+}
+
+.riverWater::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(90deg,
+    transparent 0%,
+    rgba(255,255,255,0.1) 50%,
+    transparent 100%
+  );
+  animation: waterShimmer 4s ease-in-out infinite;
+}
+
+@keyframes waterShimmer {
+  0% { left: -100%; }
+  100% { left: 200%; }
+}
+
+.fishContainer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+}
+
+.fish {
+  position: absolute;
+  pointer-events: auto;
+}
+
+.fish svg {
+  width: 100%;
+  height: 100%;
+  filter: drop-shadow(0 2px 3px rgba(0,0,0,0.3));
+}
+
+.fish:hover svg {
+  filter: drop-shadow(0 3px 5px rgba(0,0,0,0.4)) brightness(1.1);
+}
+
+.fish:active {
+  transform: scale(0.9) !important;
+}
+
+.fish1 svg { --fish-color: #ff6b6b; }
+.fish2 svg { --fish-color: #4ecdc4; }
+.fish3 svg { --fish-color: #9b59b6; }
+.fish4 svg { --fish-color: #95a5a6; }
+
+/* Cars Road Section */
+#carsClicker {
+  display: none;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+}
+
+#carsClicker:not(.hidden) {
+  display: flex;
+}
+
+.roadArea {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  gap: 10px;
+  width: 800px;
+  max-width: 800px;
+}
+
+.roadHeader {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+}
+
+.carsCountDisplay {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--primary);
+}
+
+.carsLabel {
+  font-size: 16px;
+  color: var(--mutedText);
+  font-weight: 500;
+}
+
+.road {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  border-radius: 12px;
+  overflow: hidden;
+  min-height: 280px;
+  position: relative;
+  background: #34495e;
+  border: 4px solid #2c3e50;
+}
+
+.roadLane {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+  background: #7f8c8d;
+  display: flex;
+  align-items: center;
+}
+
+.roadLane:nth-child(odd) {
+  background: #95a5a6;
+}
+
+.laneMarking {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: repeating-linear-gradient(
+    90deg,
+    #ecf0f1 0px,
+    #ecf0f1 20px,
+    transparent 20px,
+    transparent 40px
+  );
+}
+
+.roadDivider {
+  height: 6px;
+  background: #f39c12;
+  position: relative;
+}
+
+.roadDivider::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: repeating-linear-gradient(
+    90deg,
+    #e74c3c 0px,
+    #e74c3c 15px,
+    #f1c40f 15px,
+    #f1c40f 30px
+  );
+  transform: translateY(-50%);
+}
+
+.vehicleContainer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+}
+
+.vehicle {
+  position: absolute;
+  pointer-events: auto;
+}
+
+.vehicle svg {
+  width: 100%;
+  height: 100%;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.4));
+}
+
+.vehicle:hover svg {
+  filter: drop-shadow(0 4px 6px rgba(0,0,0,0.5)) brightness(1.1);
+}
+
+.vehicle:active {
+  transform: scale(0.9) !important;
+}
+
+@media (max-width: 640px) {
+  .fishRiver {
+    min-height: 180px;
+  }
+  .fishRiverHeader {
+    padding: 6px;
+  }
+  .fishCountDisplay {
+    font-size: 22px;
+  }
+  .grassTop, .grassBottom {
+    height: 15px;
+  }
+  .fish {
+    width: 40px !important;
+    height: 20px !important;
+  }
+  .road {
+    min-height: 220px;
+  }
+  .roadHeader {
+    padding: 6px;
+  }
+  .carsCountDisplay {
+    font-size: 22px;
+  }
+  .vehicle {
+    width: 50px !important;
+    height: 25px !important;
+  }
+}

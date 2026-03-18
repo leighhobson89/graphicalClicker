@@ -54,7 +54,11 @@
     "upgrade_goldNugget": "Gold Nugget",
     "upgrade_goldPan": "Gold Pan",
     "upgrade_goldMine": "Gold Mine",
-    "upgrade_goldForge": "Golden Forge"
+    "upgrade_goldForge": "Golden Forge",
+    "tabFish": "Fish",
+    "fishCount": "Fish",
+    "tabCars": "Cars",
+    "carsCount": "Cars"
   },
   "es": {
     "appTitle": "Clicker Modular",
@@ -111,7 +115,11 @@
     "upgrade_goldNugget": "Pepita de Oro",
     "upgrade_goldPan": "Batea de Oro",
     "upgrade_goldMine": "Mina de Oro",
-    "upgrade_goldForge": "Forja Dorada"
+    "upgrade_goldForge": "Forja Dorada",
+    "tabFish": "Pescado",
+    "fishCount": "Pescado",
+    "tabCars": "Autos",
+    "carsCount": "Autos"
   },
   "de": {
     "appTitle": "Modularer Clicker",
@@ -168,7 +176,11 @@
     "upgrade_goldNugget": "Gold-Nugget",
     "upgrade_goldPan": "Goldpfanne",
     "upgrade_goldMine": "Gold-Mine",
-    "upgrade_goldForge": "Goldene Schmiede"
+    "upgrade_goldForge": "Goldene Schmiede",
+    "tabFish": "Fisch",
+    "fishCount": "Fisch",
+    "tabCars": "Autos",
+    "carsCount": "Autos"
   },
   "it": {
     "appTitle": "Clicker Modulare",
@@ -225,7 +237,11 @@
     "upgrade_goldNugget": "Pepita d'Oro",
     "upgrade_goldPan": "Padella d'Oro",
     "upgrade_goldMine": "Miniera d'Oro",
-    "upgrade_goldForge": "Forgia Dorata"
+    "upgrade_goldForge": "Forgia Dorata",
+    "tabFish": "Pesce",
+    "fishCount": "Pesce",
+    "tabCars": "Auto",
+    "carsCount": "Auto"
   },
   "fr": {
     "appTitle": "Clicker Modulaire",
@@ -267,6 +283,10 @@
     "stoneCount": "Pierre",
     "goldCount": "Or",
     "rpsDisplay": "/s",
+    "tabFish": "Poisson",
+    "fishCount": "Poisson",
+    "tabCars": "Voitures",
+    "carsCount": "Voitures",
     "upgrade_gemRock": "Roche de Gemmes",
     "upgrade_gemMine": "Mine de Gemmes",
     "upgrade_gemFactory": "Usine de Gemmes",
@@ -324,6 +344,10 @@
     "stoneCount": "Pedra",
     "goldCount": "Ouro",
     "rpsDisplay": "/s",
+    "tabFish": "Peixe",
+    "fishCount": "Peixe",
+    "tabCars": "Carros",
+    "carsCount": "Carros",
     "upgrade_gemRock": "Rocha de Gemas",
     "upgrade_gemMine": "Mina de Gemas",
     "upgrade_gemFactory": "Fábrica de Gemas",

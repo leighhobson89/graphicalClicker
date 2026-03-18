@@ -25,7 +25,7 @@ function setState(nextState) {
   if (currentState === GameStates.menuState) {
     stopLoop();
     stopAutosave();
-    saveToLocalStorage(); // Save before going to menu
+    saveToLocalStorage();
     UI.showMenu();
     UI.renderMenu({
       onNewGame: () => setState(GameStates.gameActiveState),
@@ -41,7 +41,7 @@ function setState(nextState) {
       onBackToMenu: () => setState(GameStates.menuState)
     }).then(() => {
       startLoop();
-      startAutosave(); // Start autosave when game starts
+      startAutosave();
     });
   }
 }
@@ -75,9 +75,7 @@ function boot() {
   UI.init();
 
   initLanguage().then(() => {
-    // Try to load existing save
     loadFromLocalStorage();
-    // Apply theme from loaded save (or default)
     applyTheme(globals.getSelectedTheme());
     setState(GameStates.menuState);
   });

@@ -1,9 +1,5 @@
-// All game variables are managed here and accessed via getters/setters.
-
-// Resource definitions - 4 resources: gems, wood, stone, gold
 const RESOURCES = ['gems', 'wood', 'stone', 'gold'];
 
-// Core resource currencies
 let gems = 0;
 let totalGemsEarned = 0;
 let gemsPerSecond = 0;
@@ -28,12 +24,15 @@ let goldPerSecond = 0;
 let goldClickPower = 1;
 let goldClickMultiplier = 1;
 
-// Total clicks across all resources
+let fish = 0;
+let totalFishEarned = 0;
+
+let cars = 0;
+let totalCarsEarned = 0;
+
 let totalClicks = 0;
 
-// Upgrades data structure - organized by resource type
 const upgrades = {
-  // Gem upgrades (renamed from autoClicker to gemRock)
   gemRock: {
     id: 'gemRock',
     name: 'Gem Rock',
@@ -82,7 +81,6 @@ const upgrades = {
     maxCount: 9999,
     icon: 'images/upgradeGemPortal.svg'
   },
-  // Wood upgrades
   woodSapling: {
     id: 'woodSapling',
     name: 'Wood Sapling',
@@ -131,7 +129,6 @@ const upgrades = {
     maxCount: 9999,
     icon: 'images/upgradeWoodGrove.svg'
   },
-  // Stone upgrades
   stonePebbles: {
     id: 'stonePebbles',
     name: 'Stone Pebbles',
@@ -180,7 +177,6 @@ const upgrades = {
     maxCount: 9999,
     icon: 'images/upgradeStoneMountain.svg'
   },
-  // Gold upgrades
   goldNugget: {
     id: 'goldNugget',
     name: 'Gold Nugget',
@@ -231,15 +227,12 @@ const upgrades = {
   }
 };
 
-// Power-ups
 let activePowerUps = [];
 
-// Settings
 let soundEnabled = true;
 let selectedTheme = 'light';
 let selectedLanguage = 'en';
 
-// Legacy variables
 let score = 0;
 let level = 1;
 let resources = 0;
@@ -268,6 +261,12 @@ export function resetGameVariables() {
   goldPerSecond = 0;
   goldClickPower = 1;
   goldClickMultiplier = 1;
+  
+  fish = 0;
+  totalFishEarned = 0;
+  
+  cars = 0;
+  totalCarsEarned = 0;
   
   totalClicks = 0;
   
@@ -357,7 +356,6 @@ export function buyUpgrade(upgradeId) {
   
   if (currentAmount < cost) return false;
   
-  // Deduct cost from appropriate resource
   setResourceAmount(resourceType, currentAmount - cost);
   
   upgrade.owned++;
@@ -365,7 +363,6 @@ export function buyUpgrade(upgradeId) {
   return true;
 }
 
-// Click functions for each resource
 export function clickResource(resourceType) {
   let power, multiplier;
   
@@ -392,8 +389,7 @@ export function clickResource(resourceType) {
   }
   
   const amount = power * multiplier;
-  
-  // Add to resource
+
   const current = getResourceAmount(resourceType);
   setResourceAmount(resourceType, current + amount);
   addResourceEarned(resourceType, amount);
@@ -402,13 +398,11 @@ export function clickResource(resourceType) {
   return amount;
 }
 
-// Legacy click function for gems
 export function click() {
   return clickResource('gems');
 }
 
 export function tickGameLogic(deltaTimeSeconds) {
-  // Add passive income for each resource
   gems += gemsPerSecond * deltaTimeSeconds;
   totalGemsEarned += gemsPerSecond * deltaTimeSeconds;
   
@@ -422,13 +416,23 @@ export function tickGameLogic(deltaTimeSeconds) {
   totalGoldEarned += goldPerSecond * deltaTimeSeconds;
 }
 
-// Getters for upgrades by resource type
+export function catchFish() {
+  fish++;
+  totalFishEarned++;
+  return 1;
+}
+
+export function catchCar() {
+  cars++;
+  totalCarsEarned++;
+  return 1;
+}
+
 export function getUpgradesByResource(resourceType) {
   return Object.values(upgrades).filter(u => u.resourceType === resourceType);
 }
 
 export const globals = {
-  // Gems
   getGems: () => gems,
   setGems: (v) => { gems = Math.max(0, Number(v) || 0); },
   getTotalGemsEarned: () => totalGemsEarned,
@@ -440,7 +444,6 @@ export const globals = {
   getGemsClickMultiplier: () => gemsClickMultiplier,
   setGemsClickMultiplier: (v) => { gemsClickMultiplier = Math.max(1, Number(v) || 1); },
   
-  // Wood
   getWood: () => wood,
   setWood: (v) => { wood = Math.max(0, Number(v) || 0); },
   getTotalWoodEarned: () => totalWoodEarned,
@@ -452,7 +455,6 @@ export const globals = {
   getWoodClickMultiplier: () => woodClickMultiplier,
   setWoodClickMultiplier: (v) => { woodClickMultiplier = Math.max(1, Number(v) || 1); },
   
-  // Stone
   getStone: () => stone,
   setStone: (v) => { stone = Math.max(0, Number(v) || 0); },
   getTotalStoneEarned: () => totalStoneEarned,
@@ -464,7 +466,6 @@ export const globals = {
   getStoneClickMultiplier: () => stoneClickMultiplier,
   setStoneClickMultiplier: (v) => { stoneClickMultiplier = Math.max(1, Number(v) || 1); },
   
-  // Gold
   getGold: () => gold,
   setGold: (v) => { gold = Math.max(0, Number(v) || 0); },
   getTotalGoldEarned: () => totalGoldEarned,
@@ -476,7 +477,16 @@ export const globals = {
   getGoldClickMultiplier: () => goldClickMultiplier,
   setGoldClickMultiplier: (v) => { goldClickMultiplier = Math.max(1, Number(v) || 1); },
   
-  // Shared
+  getFish: () => fish,
+  setFish: (v) => { fish = Math.max(0, Number(v) || 0); },
+  getTotalFishEarned: () => totalFishEarned,
+  setTotalFishEarned: (v) => { totalFishEarned = Math.max(0, Number(v) || 0); },
+  
+  getCars: () => cars,
+  setCars: (v) => { cars = Math.max(0, Number(v) || 0); },
+  getTotalCarsEarned: () => totalCarsEarned,
+  setTotalCarsEarned: (v) => { totalCarsEarned = Math.max(0, Number(v) || 0); },
+  
   getTotalClicks: () => totalClicks,
   setTotalClicks: (v) => { totalClicks = Math.max(0, Number(v) || 0); },
   
@@ -504,12 +514,13 @@ export const globals = {
   getResources: () => resources,
   setResources: (v) => { resources = Math.max(0, Number(v) || 0); },
   
-  // Helper to get all resource data
   getAllResourceData: () => ({
     gems: { amount: gems, total: totalGemsEarned, rps: gemsPerSecond, clickPower: gemsClickPower, clickMultiplier: gemsClickMultiplier },
     wood: { amount: wood, total: totalWoodEarned, rps: woodPerSecond, clickPower: woodClickPower, clickMultiplier: woodClickMultiplier },
     stone: { amount: stone, total: totalStoneEarned, rps: stonePerSecond, clickPower: stoneClickPower, clickMultiplier: stoneClickMultiplier },
-    gold: { amount: gold, total: totalGoldEarned, rps: goldPerSecond, clickPower: goldClickPower, clickMultiplier: goldClickMultiplier }
+    gold: { amount: gold, total: totalGoldEarned, rps: goldPerSecond, clickPower: goldClickPower, clickMultiplier: goldClickMultiplier },
+    fish: { amount: fish, total: totalFishEarned, rps: 0, clickPower: 1, clickMultiplier: 1 },
+    cars: { amount: cars, total: totalCarsEarned, rps: 0, clickPower: 1, clickMultiplier: 1 }
   })
 };
 

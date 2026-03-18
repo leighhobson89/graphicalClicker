@@ -1,0 +1,22 @@
+<svg viewBox="0 0 100 50" xmlns="http://www.w3.org/2000/svg">
+  <!-- Large semi truck - dark blue -->
+  <g fill="#2c3e50" stroke="#1a252f" stroke-width="1">
+    <!-- Trailer -->
+    <path d="M5 30 L5 12 L55 12 L55 35 L50 40 L10 40 L5 35 Z"/>
+    <!-- Cab -->
+    <path d="M58 32 L58 10 L80 10 L92 18 L95 32 L95 40 L88 40 L85 35 L68 35 L65 40 L58 40 Z"/>
+    <!-- Trailer detail -->
+    <path fill="#34495e" d="M10 15 L50 15 L50 30 L10 30 Z" opacity="0.3"/>
+    <!-- Windows -->
+    <path fill="#95a5a6" d="M62 12 L78 12 L78 22 L62 22 Z"/>
+    <path fill="#95a5a6" d="M82 12 L88 18 L88 22 L82 22 Z"/>
+    <!-- Wheels -->
+    <circle cx="15" cy="40" r="6" fill="#1a1a1a"/>
+    <circle cx="45" cy="40" r="6" fill="#1a1a1a"/>
+    <circle cx="65" cy="40" r="6" fill="#1a1a1a"/>
+    <circle cx="75" cy="40" r="6" fill="#1a1a1a"/>
+    <circle cx="88" cy="40" r="6" fill="#1a1a1a"/>
+    <!-- Headlights -->
+    <ellipse cx="93" cy="28" rx="2" ry="4" fill="#f1c40f"/>
+  </g>
+</svg>

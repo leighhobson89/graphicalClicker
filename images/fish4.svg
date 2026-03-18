@@ -1,0 +1,25 @@
+<svg viewBox="0 0 64 32" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="fish4Grad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#2C3E50"/>
+      <stop offset="50%" style="stop-color:#34495E"/>
+      <stop offset="100%" style="stop-color:#95A5A6"/>
+    </linearGradient>
+  </defs>
+  <!-- Rare silver fish -->
+  <g fill="url(#fish4Grad)" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round">
+    <!-- Sleek body -->
+    <ellipse cx="32" cy="16" rx="28" ry="9"/>
+    <!-- Pointed tail -->
+    <path d="M4 16 L0 10 L0 22 Z"/>
+    <!-- Large eye -->
+    <circle cx="52" cy="14" r="3" fill="currentColor"/>
+    <circle cx="53" cy="13" r="1" fill="#FFF"/>
+    <!-- Silver shine -->
+    <path d="M20 12 Q32 10 44 12" stroke="rgba(255,255,255,0.5)" stroke-width="1.5" fill="none"/>
+    <path d="M18 16 Q32 14 46 16" stroke="rgba(255,255,255,0.3)" stroke-width="1.5" fill="none"/>
+    <!-- Small fins -->
+    <path d="M28 7 L32 2 L36 7 Z" fill="currentColor"/>
+    <path d="M28 25 L32 30 L36 25 Z" fill="currentColor"/>
+  </g>
+</svg>

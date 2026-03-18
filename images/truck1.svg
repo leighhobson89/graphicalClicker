@@ -1,0 +1,19 @@
+<svg viewBox="0 0 90 45" xmlns="http://www.w3.org/2000/svg">
+  <!-- Small truck - orange -->
+  <g fill="#e67e22" stroke="#d35400" stroke-width="1">
+    <!-- Cab -->
+    <path d="M45 20 L45 8 L65 8 L75 15 L78 25 L78 32 L75 35 L68 35 L65 30 L52 30 L48 35 L42 35 L42 32 Z"/>
+    <!-- Bed -->
+    <path d="M5 25 L5 15 L42 15 L42 32 L38 35 L10 35 L5 32 Z"/>
+    <!-- Windows -->
+    <path fill="#34495e" d="M48 10 L62 10 L62 20 L48 20 Z"/>
+    <path fill="#34495e" d="M66 10 L72 16 L72 20 L66 20 Z"/>
+    <!-- Wheels -->
+    <circle cx="15" cy="35" r="6" fill="#2c3e50"/>
+    <circle cx="35" cy="35" r="6" fill="#2c3e50"/>
+    <circle cx="58" cy="35" r="6" fill="#2c3e50"/>
+    <circle cx="72" cy="35" r="6" fill="#2c3e50"/>
+    <!-- Headlights -->
+    <ellipse cx="76" cy="22" rx="2" ry="4" fill="#f1c40f"/>
+  </g>
+</svg>

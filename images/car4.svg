@@ -1,0 +1,15 @@
+<svg viewBox="0 0 30 35" xmlns="http://www.w3.org/2000/svg">
+  <!-- Hatchback - purple -->
+  <g fill="#9b59b6" stroke="#8e44ad" stroke-width="1">
+    <!-- Body -->
+    <path d="M1 25 L3 14 L9 10 L24 10 L29 14 L30 25 L30 30 L28 32 L24 32 L22 28 L8 28 L6 32 L2 32 L1 30 Z"/>
+    <!-- Windows -->
+    <path fill="#34495e" d="M4 15 L8 12 L8 22 L3 24 Z"/>
+    <path fill="#34495e" d="M10 12 L23 12 L28 16 L28 22 L10 22 Z"/>
+    <!-- Wheels -->
+    <circle cx="6" cy="32" r="4" fill="#2c3e50"/>
+    <circle cx="24" cy="32" r="4" fill="#2c3e50"/>
+    <!-- Headlights -->
+    <ellipse cx="29" cy="19" rx="2" ry="2" fill="#f1c40f"/>
+  </g>
+</svg>

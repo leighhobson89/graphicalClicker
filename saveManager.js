@@ -1,19 +1,14 @@
-// Save/Load Manager with LZString compression
-// LZString is loaded from CDN in index.html
-
 import { globals, upgrades, resetGameVariables, recalculateAllRPS } from "./constantsAndGlobalVariables.js";
 
 const SAVE_KEY = 'clickerGameSave';
-const AUTOSAVE_INTERVAL = 60000; // 1 minute
+const AUTOSAVE_INTERVAL = 60000;
 
 let autosaveTimer = null;
 
-// Create a save data object from current game state
 function createSaveData() {
   return {
-    version: 2, // Incremented for 4-resource format
+    version: 4,
     timestamp: Date.now(),
-    // All 4 resources
     gems: globals.getGems(),
     totalGemsEarned: globals.getTotalGemsEarned(),
     wood: globals.getWood(),
@@ -22,7 +17,10 @@ function createSaveData() {
     totalStoneEarned: globals.getTotalStoneEarned(),
     gold: globals.getGold(),
     totalGoldEarned: globals.getTotalGoldEarned(),
-    // Shared
+    fish: globals.getFish(),
+    totalFishEarned: globals.getTotalFishEarned(),
+    cars: globals.getCars(),
+    totalCarsEarned: globals.getTotalCarsEarned(),
     totalClicks: globals.getTotalClicks(),
     soundEnabled: globals.getSoundEnabled(),
     selectedTheme: globals.getSelectedTheme(),
@@ -33,27 +31,23 @@ function createSaveData() {
   };
 }
 
-// Apply save data to game state
 function applySaveData(data) {
   if (!data) {
     console.error('Invalid save data');
     return false;
   }
   
-  // Support both version 1 (legacy) and version 2 (4-resource)
-  if (data.version !== 1 && data.version !== 2) {
+  if (data.version !== 1 && data.version !== 2 && data.version !== 3 && data.version !== 4) {
     console.error('Invalid save data version');
     return false;
   }
 
   resetGameVariables();
 
-  // Load gems (both versions)
   globals.setGems(data.gems || 0);
   globals.setTotalGemsEarned(data.totalGemsEarned || 0);
   
-  // Load other resources (version 2 only, otherwise start at 0)
-  if (data.version === 2) {
+  if (data.version >= 2) {
     globals.setWood(data.wood || 0);
     globals.setTotalWoodEarned(data.totalWoodEarned || 0);
     globals.setStone(data.stone || 0);
@@ -62,12 +56,21 @@ function applySaveData(data) {
     globals.setTotalGoldEarned(data.totalGoldEarned || 0);
   }
   
+  if (data.version >= 3) {
+    globals.setFish(data.fish || 0);
+    globals.setTotalFishEarned(data.totalFishEarned || 0);
+  }
+  
+  if (data.version >= 4) {
+    globals.setCars(data.cars || 0);
+    globals.setTotalCarsEarned(data.totalCarsEarned || 0);
+  }
+  
   globals.setTotalClicks(data.totalClicks || 0);
   globals.setSoundEnabled(data.soundEnabled !== undefined ? data.soundEnabled : true);
   globals.setSelectedTheme(data.selectedTheme || 'light');
   globals.setSelectedLanguage(data.selectedLanguage || 'en');
 
-  // Restore upgrades
   if (data.upgrades) {
     Object.entries(data.upgrades).forEach(([id, saved]) => {
       if (upgrades[id] && saved.owned !== undefined) {
@@ -80,7 +83,6 @@ function applySaveData(data) {
   return true;
 }
 
-// Save to LocalStorage
 export function saveToLocalStorage() {
   try {
     const saveData = createSaveData();
@@ -95,7 +97,6 @@ export function saveToLocalStorage() {
   }
 }
 
-// Load from LocalStorage
 export function loadFromLocalStorage() {
   try {
     const compressed = localStorage.getItem(SAVE_KEY);
@@ -118,19 +119,16 @@ export function loadFromLocalStorage() {
   }
 }
 
-// Check if a save exists
 export function hasSave() {
   return localStorage.getItem(SAVE_KEY) !== null;
 }
 
-// Export save as a file
 export function exportSave() {
   try {
     const saveData = createSaveData();
     const json = JSON.stringify(saveData);
     const compressed = LZString.compressToBase64(json);
 
-    // Create download
     const blob = new Blob([compressed], { type: 'application/octet-stream' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -149,7 +147,6 @@ export function exportSave() {
   }
 }
 
-// Import save from file
 export async function importSave(file) {
   try {
     const compressed = await file.text();
@@ -159,7 +156,6 @@ export async function importSave(file) {
 
     if (success) {
       console.log('Save imported successfully');
-      // Also save to LocalStorage so it's persistent
       saveToLocalStorage();
     }
     return success;
@@ -169,7 +165,6 @@ export async function importSave(file) {
   }
 }
 
-// Start autosave
 export function startAutosave() {
   if (autosaveTimer) return;
 
@@ -180,7 +175,6 @@ export function startAutosave() {
   console.log('Autosave started (every 60 seconds)');
 }
 
-// Stop autosave
 export function stopAutosave() {
   if (autosaveTimer) {
     clearInterval(autosaveTimer);

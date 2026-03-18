@@ -1,0 +1,18 @@
+<svg viewBox="0 0 60 35" xmlns="http://www.w3.org/2000/svg">
+  <!-- Motorbike - red -->
+  <g fill="#c0392b" stroke="#922b21" stroke-width="1">
+    <!-- Body -->
+    <path d="M15 20 L20 12 L35 10 L45 12 L50 18 L52 25 L48 28 L42 25 L38 28 L22 28 L18 25 L12 28 L8 25 Z"/>
+    <!-- Seat -->
+    <path fill="#2c3e50" d="M22 12 L32 10 L38 12 L35 15 L25 15 Z"/>
+    <!-- Handlebars -->
+    <path fill="none" stroke="#2c3e50" stroke-width="3" d="M40 12 L48 8 L52 10"/>
+    <!-- Wheels -->
+    <circle cx="15" cy="28" r="7" fill="#2c3e50" stroke="#1a1a1a" stroke-width="2"/>
+    <circle cx="45" cy="28" r="7" fill="#2c3e50" stroke="#1a1a1a" stroke-width="2"/>
+    <!-- Engine area -->
+    <path fill="#95a5a6" d="M28 18 L38 18 L40 24 L26 24 Z"/>
+    <!-- Headlight -->
+    <ellipse cx="52" cy="18" rx="2" ry="3" fill="#f1c40f"/>
+  </g>
+</svg>
