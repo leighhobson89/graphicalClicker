@@ -1,33 +1,20 @@
-import { globals, upgrades, resetGameVariables, recalculateAllRPS } from "./constantsAndGlobalVariables.js";
+import { globals, resetGameVariables } from "./constantsAndGlobalVariables.js";
 
-const SAVE_KEY = 'clickerGameSave';
+const SAVE_KEY = 'trafficRushSave';
 const AUTOSAVE_INTERVAL = 60000;
 
 let autosaveTimer = null;
 
 function createSaveData() {
   return {
-    version: 4,
+    version: 1,
     timestamp: Date.now(),
-    gems: globals.getGems(),
-    totalGemsEarned: globals.getTotalGemsEarned(),
-    wood: globals.getWood(),
-    totalWoodEarned: globals.getTotalWoodEarned(),
-    stone: globals.getStone(),
-    totalStoneEarned: globals.getTotalStoneEarned(),
-    gold: globals.getGold(),
-    totalGoldEarned: globals.getTotalGoldEarned(),
-    fish: globals.getFish(),
-    totalFishEarned: globals.getTotalFishEarned(),
     cars: globals.getCars(),
     totalCarsEarned: globals.getTotalCarsEarned(),
     totalClicks: globals.getTotalClicks(),
     soundEnabled: globals.getSoundEnabled(),
     selectedTheme: globals.getSelectedTheme(),
-    selectedLanguage: globals.getSelectedLanguage(),
-    upgrades: Object.fromEntries(
-      Object.entries(upgrades).map(([id, u]) => [id, { owned: u.owned }])
-    )
+    selectedLanguage: globals.getSelectedLanguage()
   };
 }
 
@@ -36,50 +23,30 @@ function applySaveData(data) {
     console.error('Invalid save data');
     return false;
   }
-  
-  if (data.version !== 1 && data.version !== 2 && data.version !== 3 && data.version !== 4) {
+
+  if (data.version !== 1) {
     console.error('Invalid save data version');
     return false;
   }
 
   resetGameVariables();
 
-  globals.setGems(data.gems || 0);
-  globals.setTotalGemsEarned(data.totalGemsEarned || 0);
-  
-  if (data.version >= 2) {
-    globals.setWood(data.wood || 0);
-    globals.setTotalWoodEarned(data.totalWoodEarned || 0);
-    globals.setStone(data.stone || 0);
-    globals.setTotalStoneEarned(data.totalStoneEarned || 0);
-    globals.setGold(data.gold || 0);
-    globals.setTotalGoldEarned(data.totalGoldEarned || 0);
+  if (data.cars !== undefined) {
+    const currentCars = globals.getCars();
+    globals.addCars(data.cars - currentCars);
   }
-  
-  if (data.version >= 3) {
-    globals.setFish(data.fish || 0);
-    globals.setTotalFishEarned(data.totalFishEarned || 0);
+
+  if (data.totalClicks !== undefined) {
+    const clicksToAdd = data.totalClicks;
+    for (let i = 0; i < clicksToAdd; i++) {
+      globals.incrementClicks();
+    }
   }
-  
-  if (data.version >= 4) {
-    globals.setCars(data.cars || 0);
-    globals.setTotalCarsEarned(data.totalCarsEarned || 0);
-  }
-  
-  globals.setTotalClicks(data.totalClicks || 0);
+
   globals.setSoundEnabled(data.soundEnabled !== undefined ? data.soundEnabled : true);
-  globals.setSelectedTheme(data.selectedTheme || 'light');
+  globals.setSelectedTheme(data.selectedTheme || 'dark');
   globals.setSelectedLanguage(data.selectedLanguage || 'en');
 
-  if (data.upgrades) {
-    Object.entries(data.upgrades).forEach(([id, saved]) => {
-      if (upgrades[id] && saved.owned !== undefined) {
-        upgrades[id].owned = saved.owned;
-      }
-    });
-  }
-
-  recalculateAllRPS();
   return true;
 }
 
@@ -133,7 +100,7 @@ export function exportSave() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `clicker-save-${new Date().toISOString().slice(0, 10)}.save`;
+    a.download = `traffic-rush-save-${new Date().toISOString().slice(0, 10)}.save`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);

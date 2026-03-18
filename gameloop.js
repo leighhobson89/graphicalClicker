@@ -1,7 +1,7 @@
 import { UI } from "./ui.js";
 import { initTheme, applyTheme } from "./themeManager.js";
 import { initLanguage } from "./languageManager.js";
-import { getHudSnapshot, tickGameLogic } from "./game.js";
+import { getHudSnapshot } from "./game.js";
 import { 
   startAutosave, 
   stopAutosave, 
@@ -17,13 +17,11 @@ const GameStates = {
 };
 
 let currentState = GameStates.menuState;
-let intervalId = null;
 
 function setState(nextState) {
   currentState = nextState;
 
   if (currentState === GameStates.menuState) {
-    stopLoop();
     stopAutosave();
     saveToLocalStorage();
     UI.showMenu();
@@ -40,35 +38,9 @@ function setState(nextState) {
     UI.renderGame({
       onBackToMenu: () => setState(GameStates.menuState)
     }).then(() => {
-      startLoop();
       startAutosave();
     });
   }
-}
-
-function startLoop() {
-  if (intervalId) return;
-
-  const fps = 30;
-  const frameMs = 1000 / fps;
-  let last = performance.now();
-
-  intervalId = window.setInterval(() => {
-    const now = performance.now();
-    const dtMs = now - last;
-    last = now;
-
-    const dtSeconds = dtMs / 1000;
-    tickGameLogic(dtSeconds);
-
-    UI.updateHud();
-  }, frameMs);
-}
-
-function stopLoop() {
-  if (!intervalId) return;
-  window.clearInterval(intervalId);
-  intervalId = null;
 }
 
 function boot() {

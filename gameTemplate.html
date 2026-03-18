@@ -1,117 +1,43 @@
-<div class="clickerLayout">
-  <div class="topBar">
-    <button id="btnMenu" type="button" class="danger" data-i18n="menuButton">Menu</button>
-  </div>
-  
-  <div class="resourceTabs">
-    <button class="resourceTab active" data-resource="gems" data-i18n="tabGems">Gems</button>
-    <button class="resourceTab" data-resource="wood" data-i18n="tabWood">Wood</button>
-    <button class="resourceTab" data-resource="stone" data-i18n="tabStone">Stone</button>
-    <button class="resourceTab" data-resource="gold" data-i18n="tabGold">Gold</button>
-    <button class="resourceTab" data-resource="fish" data-i18n="tabFish">Fish</button>
-    <button class="resourceTab" data-resource="cars" data-i18n="tabCars">Cars</button>
-  </div>
-  
-  <div class="mainClicker">
-    <div class="clickerRow" id="gemsClicker">
-      <div class="resourceDisplay">
-        <div class="resourceCount" id="gemsCount">0</div>
-        <div class="resourceRps" id="gemsRps">+0/s</div>
-      </div>
-      <div class="clickerButton" id="clickerGems">
-        <div class="clickerImage" data-svg="images/clickerGems.svg"></div>
-        <div class="clickRipple"></div>
-      </div>
-      <div class="resourceClickPower" id="gemsPowerDisplay">+1 per click</div>
+<div class="trafficSim">
+  <header class="trafficHeader">
+    <div class="headerLeft">
+      <button id="btnMenu" type="button" class="menuBtn" aria-label="Back to menu">
+        <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
+          <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
+        </svg>
+      </button>
+      <h1 class="gameTitle" data-i18n="gameTitle">Traffic Rush</h1>
     </div>
-    
-    <div class="clickerRow hidden" id="woodClicker">
-      <div class="resourceDisplay">
-        <div class="resourceCount" id="woodCount">0</div>
-        <div class="resourceRps" id="woodRps">+0/s</div>
-      </div>
-      <div class="clickerButton" id="clickerWood">
-        <div class="clickerImage" data-svg="images/clickerWood.svg"></div>
-        <div class="clickRipple"></div>
-      </div>
-      <div class="resourceClickPower" id="woodPowerDisplay">+1 per click</div>
+    <div class="trafficControls">
+      <button id="btnStart" type="button" class="trafficBtn start">Start</button>
+      <button id="btnStop" type="button" class="trafficBtn stop">Stop</button>
+      <button id="btnReset" type="button" class="trafficBtn reset">Reset</button>
     </div>
-    
-    <div class="clickerRow hidden" id="stoneClicker">
-      <div class="resourceDisplay">
-        <div class="resourceCount" id="stoneCount">0</div>
-        <div class="resourceRps" id="stoneRps">+0/s</div>
+    <div class="headerRight">
+      <div class="makeStartControl">
+        <label class="checkboxLabel">
+          <input type="checkbox" id="makeStartCheckbox">
+          <span>Make Start</span>
+        </label>
       </div>
-      <div class="clickerButton" id="clickerStone">
-        <div class="clickerImage" data-svg="images/clickerStone.svg"></div>
-        <div class="clickRipple"></div>
-      </div>
-      <div class="resourceClickPower" id="stonePowerDisplay">+1 per click</div>
-    </div>
-    
-    <div class="clickerRow hidden" id="goldClicker">
-      <div class="resourceDisplay">
-        <div class="resourceCount" id="goldCount">0</div>
-        <div class="resourceRps" id="goldRps">+0/s</div>
-      </div>
-      <div class="clickerButton" id="clickerGold">
-        <div class="clickerImage" data-svg="images/clickerGold.svg"></div>
-        <div class="clickRipple"></div>
-      </div>
-      <div class="resourceClickPower" id="goldPowerDisplay">+1 per click</div>
-    </div>
-    
-    <div class="clickerRow hidden" id="fishClicker">
-      <div class="fishRiverArea">
-        <div class="fishRiverHeader">
-          <span class="fishCountDisplay" id="fishCount">0</span>
-          <span class="fishLabel" data-i18n="fishCount">Fish</span>
-        </div>
-        <div class="fishRiver" id="fishRiver">
-          <div class="grassTop"></div>
-          <div class="riverWater">
-            <div class="fishContainer" id="fishContainer"></div>
-          </div>
-          <div class="grassBottom"></div>
-        </div>
+      <div class="selectedItemBox" id="selectedItemBox">
+        <div class="label">Selected</div>
+        <div class="value" id="selectedItemValue">None</div>
       </div>
     </div>
-    
-    <div class="clickerRow hidden" id="carsClicker">
-      <div class="roadArea">
-        <div class="roadHeader">
-          <span class="carsCountDisplay" id="carsCount">0</span>
-          <span class="carsLabel" data-i18n="carsCount">Cars</span>
-        </div>
-        <div class="road" id="road">
-          <div class="roadLane" data-lane="0">
-            <div class="vehicleContainer" id="lane0Container"></div>
-          </div>
-          <div class="roadLane" data-lane="1">
-            <div class="laneMarking"></div>
-            <div class="vehicleContainer" id="lane1Container"></div>
-          </div>
-          <div class="roadDivider"></div>
-          <div class="roadLane" data-lane="2">
-            <div class="vehicleContainer" id="lane2Container"></div>
-          </div>
-          <div class="roadLane" data-lane="3">
-            <div class="laneMarking"></div>
-            <div class="vehicleContainer" id="lane3Container"></div>
-          </div>
-        </div>
-      </div>
+  </header>
+
+  <main class="trafficMain">
+    <div class="gridContainer" id="gridContainer">
+      <!-- 20x20 grid generated by JavaScript -->
     </div>
-  </div>
-  
-  <div class="statsRow" id="statsRow">
-    <div class="statPill" id="totalClicks">0 clicks</div>
-    <div class="statPill" id="totalEarned">0 earned</div>
-  </div>
-  
-  <div class="shopSection" id="shopSection">
-    <h3 class="shopTitle" data-i18n="shopTitle">Upgrades</h3>
-    <div class="shopGrid" id="shopGrid"></div>
-  </div>
+    <div class="roadPieceEditor" id="roadPieceEditor">
+      <div class="piece horizontal" data-type="horizontal" title="Horizontal Road"></div>
+      <div class="piece vertical" data-type="vertical" title="Vertical Road"></div>
+      <div class="piece corner-right-up" data-type="corner-right-up" title="Right Corner (Up)"></div>
+      <div class="piece corner-right-down" data-type="corner-right-down" title="Right Corner (Down)"></div>
+      <div class="piece corner-left-up" data-type="corner-left-up" title="Left Corner (Up)"></div>
+      <div class="piece corner-left-down" data-type="corner-left-down" title="Left Corner (Down)"></div>
+    </div>
+  </main>
 </div>
-<div id="floatingTextContainer"></div>

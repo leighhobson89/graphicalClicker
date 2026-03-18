@@ -1,19 +1,16 @@
-import { globals, clickResource as doClickResource, click as doClick, tickGameLogic as doTick, buyUpgrade, getUpgradeCost, canAffordUpgrade, upgrades, getUpgradesByResource, catchFish, catchCar } from "./constantsAndGlobalVariables.js";
+import { globals, catchCar } from "./constantsAndGlobalVariables.js";
 
 export function tickGameLogic(dtSeconds) {
-  doTick(dtSeconds);
+  // Traffic simulation - no passive resource generation
 }
 
-export function performClick(resourceType = 'gems') {
-  return doClickResource(resourceType);
+export function performClick() {
+  globals.incrementClicks();
+  return 0;
 }
 
 export function purchaseUpgrade(upgradeId) {
-  return buyUpgrade(upgradeId);
-}
-
-export function catchFishGame() {
-  return catchFish();
+  return false;
 }
 
 export function catchCarGame() {
@@ -21,50 +18,23 @@ export function catchCarGame() {
 }
 
 export function checkCanAfford(upgradeId) {
-  return canAffordUpgrade(upgradeId);
+  return false;
 }
 
 export function getUpgradePrice(upgradeId) {
-  return getUpgradeCost(upgradeId);
+  return Infinity;
 }
 
 export function getHudSnapshot() {
-  const allData = globals.getAllResourceData();
-  const upgradesData = globals.getUpgrades();
-  
   return {
-    gems: allData.gems.amount,
-    gemsPerSecond: allData.gems.rps,
-    totalGemsEarned: allData.gems.total,
-    wood: allData.wood.amount,
-    woodPerSecond: allData.wood.rps,
-    totalWoodEarned: allData.wood.total,
-    stone: allData.stone.amount,
-    stonePerSecond: allData.stone.rps,
-    totalStoneEarned: allData.stone.total,
-    gold: allData.gold.amount,
-    goldPerSecond: allData.gold.rps,
-    totalGoldEarned: allData.gold.total,
-    fish: allData.fish.amount,
-    totalFishEarned: allData.fish.total,
-    cars: allData.cars.amount,
-    totalCarsEarned: allData.cars.total,
-    totalClicks: globals.getTotalClicks(),
-    upgrades: Object.values(upgradesData).map(u => ({
-      id: u.id,
-      name: u.name,
-      resourceType: u.resourceType,
-      owned: u.owned,
-      cost: getUpgradeCost(u.id),
-      canAfford: canAffordUpgrade(u.id),
-      icon: u.icon,
-      rpsContribution: u.rpsContribution
-    }))
+    cars: globals.getCars(),
+    totalCarsEarned: globals.getTotalCarsEarned(),
+    totalClicks: globals.getTotalClicks()
   };
 }
 
 export function getUpgradesForResource(resourceType) {
-  return getUpgradesByResource(resourceType);
+  return [];
 }
 
 export function formatNumber(num) {

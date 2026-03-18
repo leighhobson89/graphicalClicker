@@ -1,7 +1,7 @@
 import { globals, resetGameVariables } from "./constantsAndGlobalVariables.js";
 import { applyTheme } from "./themeManager.js";
 import { setLanguage, updateAllTexts, t } from "./languageManager.js";
-import { performClick, purchaseUpgrade, getHudSnapshot, formatNumber, catchFishGame, catchCarGame } from "./game.js";
+import { performClick, purchaseUpgrade, getHudSnapshot, formatNumber, catchCarGame } from "./game.js";
 import { 
   hasSave, 
   exportSave, 
@@ -12,17 +12,18 @@ import {
 export const UI = {
   menuRoot: null,
   gameRoot: null,
-  onUpdateCallbacks: [],
-  floatingTexts: [],
   svgCache: {},
   templateHtml: null,
-  fishAnimationId: null,
-  activeFish: [],
-  carAnimationId: null,
   activeCars: [],
   carSvgs: null,
-  carTypes: null,
+  vehicleTypes: null,
   carAnimationRunning: false,
+  carAnimationId: null,
+  selectedPiece: null,
+  gridData: [],
+  startCell: null,
+  makeStartChecked: false,
+  roadPieceSvgs: {},
 
   init() {
     this.menuRoot = document.getElementById("menuRoot");
@@ -56,6 +57,7 @@ export const UI = {
   showMenu() {
     this.menuRoot.hidden = false;
     this.gameRoot.hidden = true;
+    this.stopCarAnimation();
   },
 
   showGame() {
@@ -69,27 +71,21 @@ export const UI = {
     const soundEnabled = globals.getSoundEnabled();
 
     this.menuRoot.innerHTML = `
-      <div class="grid">
-        <div>
-          <h2 class="h2" data-i18n="menuTitle">Menu</h2>
-          <div class="muted" data-i18n="menuDescription">Start a new game or continue. Adjust language, sound, and theme.</div>
+      <div class="menuContainer">
+        <div class="menuHeader">
+          <h1 class="gameTitle" data-i18n="menuTitle">Traffic Rush</h1>
+          <p class="menuSubtitle" data-i18n="menuSubtitle">Click vehicles. Build your collection.</p>
         </div>
 
-        <div class="row">
-          <button id="btnNewGame" class="primary" type="button" data-i18n="newGame">New Game</button>
-          <button id="btnContinue" type="button" ${!hasExistingSave ? 'disabled' : ''} data-i18n="continue">Continue</button>
+        <div class="menuActions">
+          <button id="btnNewGame" class="btnPrimary" type="button" data-i18n="newGame">New Game</button>
+          <button id="btnContinue" class="btnSecondary" type="button" ${!hasExistingSave ? 'disabled' : ''} data-i18n="continue">Continue</button>
         </div>
 
-        <div class="saveActions row">
-          <button id="btnExportSave" type="button" data-i18n="exportSave">Export Save</button>
-          <button id="btnImportSave" type="button" data-i18n="importSave">Import Save</button>
-        </div>
-        <input type="file" id="importFileInput" accept=".save" style="display:none">
-
-        <div class="grid cols2">
-          <div class="control">
-            <div class="label" data-i18n="language">Language</div>
-            <select id="languageSelect" aria-label="Language">
+        <div class="menuOptions">
+          <div class="optionGroup">
+            <label class="optionLabel" data-i18n="language">Language</label>
+            <select id="languageSelect" class="optionSelect">
               <option value="en">English</option>
               <option value="es">Español</option>
               <option value="de">Deutsch</option>
@@ -99,21 +95,26 @@ export const UI = {
             </select>
           </div>
 
-          <div class="control">
-            <div class="label" data-i18n="theme">Theme</div>
-            <select id="themeSelect" aria-label="Theme">
-              <option value="light" data-i18n-option="theme_light">Light</option>
+          <div class="optionGroup">
+            <label class="optionLabel" data-i18n="theme">Theme</label>
+            <select id="themeSelect" class="optionSelect">
               <option value="dark" data-i18n-option="theme_dark">Dark</option>
-              <option value="forest" data-i18n-option="theme_forest">Forest</option>
-              <option value="space" data-i18n-option="theme_space">Space</option>
-              <option value="frosty" data-i18n-option="theme_frosty">Frosty</option>
+              <option value="light" data-i18n-option="theme_light">Light</option>
+              <option value="neon" data-i18n-option="theme_neon">Neon</option>
+              <option value="sunset" data-i18n-option="theme_sunset">Sunset</option>
             </select>
           </div>
 
-          <div class="control">
-            <div class="label" data-i18n="sound">Sound</div>
-            <button id="btnSoundToggle" type="button">${soundEnabled ? await t("soundOn") : await t("soundOff")}</button>
+          <div class="optionGroup">
+            <label class="optionLabel" data-i18n="sound">Sound</label>
+            <button id="btnSoundToggle" class="optionBtn" type="button">${soundEnabled ? await t("soundOn") : await t("soundOff")}</button>
           </div>
+        </div>
+
+        <div class="menuFooter">
+          <button id="btnExportSave" class="btnText" type="button" data-i18n="exportSave">Export Save</button>
+          <button id="btnImportSave" class="btnText" type="button" data-i18n="importSave">Import Save</button>
+          <input type="file" id="importFileInput" accept=".save" style="display:none">
         </div>
       </div>
     `;
@@ -128,7 +129,7 @@ export const UI = {
     const btnSoundToggle = document.getElementById("btnSoundToggle");
 
     languageSelect.value = selectedLang || "en";
-    themeSelect.value = selectedTheme || "light";
+    themeSelect.value = selectedTheme || "dark";
 
     btnNewGame.addEventListener("click", () => {
       resetGameVariables();
@@ -136,7 +137,6 @@ export const UI = {
     });
 
     btnContinue.addEventListener("click", () => {
-      console.log("Continue game clicked");
       onContinue();
     });
 
@@ -171,13 +171,13 @@ export const UI = {
 
     themeSelect.addEventListener("change", (e) => {
       const value = e.target.value;
+      globals.setSelectedTheme(value);
       applyTheme(value);
     });
 
     btnSoundToggle.addEventListener("click", async () => {
       const next = !globals.getSoundEnabled();
       globals.setSoundEnabled(next);
-      console.log(next ? "Sound On" : "Sound Off");
       btnSoundToggle.textContent = next ? await t("soundOn") : await t("soundOff");
     });
 
@@ -185,779 +185,1040 @@ export const UI = {
   },
 
   async renderGame({ onBackToMenu }) {
-    const [template, gemsSvg, woodSvg, stoneSvg, goldSvg] = await Promise.all([
-      this.loadTemplate(),
-      this.loadSvg('images/clickerGems.svg'),
-      this.loadSvg('images/clickerWood.svg'),
-      this.loadSvg('images/clickerStone.svg'),
-      this.loadSvg('images/clickerGold.svg')
-    ]);
-    
-    let html = template
-      .replace('data-svg="images/clickerGems.svg"', `data-svg="gems"`, html => html.replace('>${gemsSvg}<', `>${gemsSvg}<`))
-      .replace('data-svg="images/clickerWood.svg"', `data-svg="wood"`, html => html.replace('>${woodSvg}<', `>${woodSvg}<`))
-      .replace('data-svg="images/clickerStone.svg"', `data-svg="stone"`, html => html.replace('>${stoneSvg}<', `>${stoneSvg}<`))
-      .replace('data-svg="images/clickerGold.svg"', `data-svg="gold"`, html => html.replace('>${goldSvg}<', `>${goldSvg}<`));
+    const template = await this.loadTemplate();
+    this.gameRoot.innerHTML = template;
 
-    html = template
-      .replace(/<div class="clickerImage" data-svg="images\/clickerGems.svg"><\/div>/, `<div class="clickerImage">${gemsSvg}</div>`)
-      .replace(/<div class="clickerImage" data-svg="images\/clickerWood.svg"><\/div>/, `<div class="clickerImage">${woodSvg}</div>`)
-      .replace(/<div class="clickerImage" data-svg="images\/clickerStone.svg"><\/div>/, `<div class="clickerImage">${stoneSvg}</div>`)
-      .replace(/<div class="clickerImage" data-svg="images\/clickerGold.svg"><\/div>/, `<div class="clickerImage">${goldSvg}</div>`);
-    
-    this.gameRoot.innerHTML = html;
     document.getElementById("btnMenu").addEventListener("click", onBackToMenu);
 
-    this.setupResourceTabs();
-    this.setupClickers();
-    this.setupFishRiver();
-    this.setupRoad();
-    await this.renderShop();
-    
+    await this.setupRoad();
+    this.createGrid();
+    this.setupRoadPieceEditor();
+    this.setupMakeStartControl();
+
+    document.getElementById("btnStart")?.addEventListener("click", () => {
+      this.startTraffic();
+    });
+    document.getElementById("btnStop")?.addEventListener("click", () => {
+      this.stopTraffic();
+    });
+    document.getElementById("btnReset")?.addEventListener("click", () => {
+      this.resetTraffic();
+    });
+
     await updateAllTexts(this.gameRoot);
   },
 
-  setupResourceTabs() {
-    const tabs = document.querySelectorAll('.resourceTab');
-    const rows = document.querySelectorAll('.clickerRow');
-    const shopSection = document.getElementById('shopSection');
-    const statsRow = document.getElementById('statsRow');
-    
-    tabs.forEach(tab => {
-      tab.addEventListener('click', () => {
-        const resource = tab.dataset.resource;
-
-        tabs.forEach(t => t.classList.remove('active'));
-        tab.classList.add('active');
-
-        rows.forEach(row => row.classList.add('hidden'));
-        const targetRow = document.getElementById(`${resource}Clicker`);
-        if (targetRow) targetRow.classList.remove('hidden');
-
-        if (resource === 'fish') {
-          if (shopSection) shopSection.style.display = 'none';
-          if (statsRow) statsRow.style.display = 'none';
-          this.stopCarAnimation();
-          this.startFishAnimationIfNeeded();
-        } else if (resource === 'cars') {
-          if (shopSection) shopSection.style.display = 'none';
-          if (statsRow) statsRow.style.display = 'none';
-          this.stopFishAnimation();
-          this.startCarAnimationIfNeeded();
-        } else {
-          if (shopSection) shopSection.style.display = '';
-          if (statsRow) statsRow.style.display = '';
-          this.stopFishAnimation();
-          this.stopCarAnimation();
-          this.updateShopForResource(resource);
-        }
-      });
-    });
-  },
-
-  setupClickers() {
-    const resources = ['gems', 'wood', 'stone', 'gold'];
-    
-    resources.forEach(resource => {
-      const clickerButton = document.getElementById(`clicker${resource.charAt(0).toUpperCase() + resource.slice(1)}`);
-      
-      if (!clickerButton) return;
-      
-      const handleClick = (e) => {
-        const amount = performClick(resource);
-        
-        clickerButton.style.transform = "scale(0.95)";
-        setTimeout(() => {
-          clickerButton.style.transform = "";
-        }, 100);
-        
-        this.createRipple(e, clickerButton);
-        
-        const rect = clickerButton.getBoundingClientRect();
-        const x = rect.left + rect.width / 2;
-        const y = rect.top + rect.height / 2;
-        this.createFloatingText(`+${formatNumber(amount)}`, x, y);
-        
-        this.updateDisplay();
-        
-        if (globals.getSoundEnabled()) {
-        }
-      };
-      
-      clickerButton.addEventListener("click", handleClick);
-      clickerButton.addEventListener("touchstart", (e) => {
-        e.preventDefault();
-        handleClick(e);
-      });
-    });
-  },
-
-  fishAnimationRunning: false,
-  fishTypes: null,
-  fishSvgs: null,
-
-  setupFishRiver() {
-    const fishSvgs = {};
-    Promise.all([
-      this.loadSvg('images/fish1.svg').then(svg => fishSvgs[1] = svg),
-      this.loadSvg('images/fish2.svg').then(svg => fishSvgs[2] = svg),
-      this.loadSvg('images/fish3.svg').then(svg => fishSvgs[3] = svg),
-      this.loadSvg('images/fish4.svg').then(svg => fishSvgs[4] = svg)
-    ]).then(() => {
-      this.fishSvgs = fishSvgs;
-      this.fishTypes = [
-        { type: 1, speed: 2.5, direction: 1, spawnRate: 0.025, yRange: [10, 30] },
-        { type: 2, speed: 1.8, direction: -1, spawnRate: 0.018, yRange: [35, 55] },
-        { type: 3, speed: 1.2, direction: 1, spawnRate: 0.012, yRange: [60, 80] },
-        { type: 4, speed: 0.9, direction: -1, spawnRate: 0.006, yRange: [20, 70] }
-      ];
-    });
-  },
-
-  startFishAnimationIfNeeded() {
-    if (this.fishAnimationRunning || !this.fishSvgs) return;
-    
-    const fishContainer = document.getElementById("fishContainer");
-    if (!fishContainer) return;
-    
-    this.fishAnimationRunning = true;
-    this.activeFish = [];
-    
-    const animate = () => {
-      if (!this.fishAnimationRunning) return;
-      
-      const containerWidth = fishContainer.offsetWidth || 800;
-      
-      this.fishTypes.forEach(type => {
-        if (Math.random() < type.spawnRate) {
-          this.spawnFish(fishContainer, type, containerWidth);
-        }
-      });
-      
-      for (let i = this.activeFish.length - 1; i >= 0; i--) {
-        const fish = this.activeFish[i];
-        fish.x += fish.speed * fish.direction;
-        
-        if ((fish.direction === 1 && fish.x > containerWidth + 60) ||
-            (fish.direction === -1 && fish.x < -60)) {
-          fish.el.remove();
-          this.activeFish.splice(i, 1);
-          continue;
-        }
-        
-        fish.el.style.left = `${fish.x}px`;
-      }
-      
-      this.fishAnimationId = requestAnimationFrame(animate);
-    };
-    
-    animate();
-  },
-
-  spawnFish(container, type, containerWidth) {
-    const y = type.yRange[0] + Math.random() * (type.yRange[1] - type.yRange[0]);
-    const x = type.direction === 1 ? -60 : containerWidth + 60;
-    
-    const fishEl = document.createElement('div');
-    fishEl.className = `fish fish${type.type}`;
-    fishEl.innerHTML = this.fishSvgs[type.type];
-    fishEl.style.cssText = `
-      position: absolute;
-      left: ${x}px;
-      top: ${y}%;
-      width: 48px;
-      height: 24px;
-      cursor: pointer;
-      transition: transform 0.1s, opacity 0.1s;
-      z-index: 10;
-      ${type.direction === -1 ? 'transform: scaleX(-1);' : ''}
-    `;
-    
-    fishEl.addEventListener('click', (e) => {
-      e.stopPropagation();
-      if (fishEl.dataset.caught === 'true') return;
-      fishEl.dataset.caught = 'true';
-      
-      const index = this.activeFish.findIndex(f => f.el === fishEl);
-      if (index > -1) this.activeFish.splice(index, 1);
-      
-      this.catchFish(fishEl, e.clientX, e.clientY);
-    });
-    
-    container.appendChild(fishEl);
-    
-    this.activeFish.push({
-      el: fishEl,
-      x: x,
-      y: y,
-      speed: type.speed * (0.8 + Math.random() * 0.4),
-      direction: type.direction,
-      type: type.type
-    });
-  },
-
-  stopFishAnimation() {
-    this.fishAnimationRunning = false;
-    if (this.fishAnimationId) {
-      cancelAnimationFrame(this.fishAnimationId);
-      this.fishAnimationId = null;
-    }
-    this.activeFish.forEach(f => f.el.remove());
-    this.activeFish = [];
-  },
-
   setupRoad() {
-    const carSvgs = {};
-    Promise.all([
-      this.loadSvg('images/car1.svg').then(svg => carSvgs['car1'] = svg),
-      this.loadSvg('images/car2.svg').then(svg => carSvgs['car2'] = svg),
-      this.loadSvg('images/car3.svg').then(svg => carSvgs['car3'] = svg),
-      this.loadSvg('images/car4.svg').then(svg => carSvgs['car4'] = svg),
-      this.loadSvg('images/truck1.svg').then(svg => carSvgs['truck1'] = svg),
-      this.loadSvg('images/truck2.svg').then(svg => carSvgs['truck2'] = svg),
-      this.loadSvg('images/motorbike.svg').then(svg => carSvgs['motorbike'] = svg)
-    ]).then(() => {
-      this.carSvgs = carSvgs;
-      this.carTypes = [
-        { type: 'car1', speed: 3, direction: 1, lane: 0, spawnRate: 0.02, width: 28, height: 32 },
-        { type: 'car2', speed: 2.5, direction: 1, lane: 1, spawnRate: 0.018, width: 28, height: 32 },
-        { type: 'car3', speed: 2.8, direction: 1, lane: 0, spawnRate: 0.014, width: 28, height: 32 },
-        { type: 'car4', speed: 2.2, direction: 1, lane: 1, spawnRate: 0.014, width: 28, height: 32 },
-        { type: 'truck1', speed: 2.1, direction: 1, lane: 0, spawnRate: 0.006, width: 70, height: 35 },
-        { type: 'motorbike', speed: 4.2, direction: 1, lane: 1, spawnRate: 0.007, width: 45, height: 26 },
-
-        { type: 'car1', speed: 2.7, direction: -1, lane: 2, spawnRate: 0.02, width: 28, height: 32 },
-        { type: 'car2', speed: 2.1, direction: -1, lane: 3, spawnRate: 0.018, width: 28, height: 32 },
-        { type: 'car3', speed: 2.5, direction: -1, lane: 2, spawnRate: 0.014, width: 28, height: 32 },
-        { type: 'car4', speed: 2.0, direction: -1, lane: 3, spawnRate: 0.014, width: 28, height: 32 },
-        { type: 'truck2', speed: 1.7, direction: -1, lane: 3, spawnRate: 0.006, width: 80, height: 40 },
-        { type: 'motorbike', speed: 4.0, direction: -1, lane: 2, spawnRate: 0.007, width: 45, height: 26 }
-      ];
+    return new Promise((resolve) => {
+      const carSvgs = {};
+      Promise.all([
+        this.loadSvg('images/car1.svg').then(svg => carSvgs['car1'] = svg),
+        this.loadSvg('images/car2.svg').then(svg => carSvgs['car2'] = svg),
+        this.loadSvg('images/car3.svg').then(svg => carSvgs['car3'] = svg),
+        this.loadSvg('images/car4.svg').then(svg => carSvgs['car4'] = svg),
+        this.loadSvg('images/truck1.svg').then(svg => carSvgs['truck1'] = svg),
+        this.loadSvg('images/truck2.svg').then(svg => carSvgs['truck2'] = svg),
+        this.loadSvg('images/motorbike.svg').then(svg => carSvgs['motorbike'] = svg)
+      ]).then(() => {
+        this.carSvgs = carSvgs;
+        this.vehicleTypes = [
+          { type: 'car1', speed: 0.375, width: 6, height: 6 },
+          { type: 'car2', speed: 0.33, width: 6, height: 6 },
+          { type: 'car3', speed: 0.36, width: 6, height: 6 },
+          { type: 'car4', speed: 0.3, width: 6, height: 6 },
+          { type: 'truck1', speed: 0.24, width: 14, height: 7 },
+          { type: 'truck2', speed: 0.21, width: 16, height: 8 },
+          { type: 'motorbike', speed: 0.525, width: 9, height: 5 }
+        ];
+        this.laneConfigs = [
+          { lane: 0, direction: 1, isSlowLane: true, spawnRate: 0.025 },
+          { lane: 1, direction: 1, isSlowLane: false, spawnRate: 0 },
+          { lane: 2, direction: -1, isSlowLane: false, spawnRate: 0 },
+          { lane: 3, direction: -1, isSlowLane: true, spawnRate: 0.025 }
+        ];
+        resolve();
+      });
     });
+  },
+
+  setupRoadPieceEditor() {
+    const editor = document.getElementById('roadPieceEditor');
+    const selectedValueEl = document.getElementById('selectedItemValue');
+    if (!editor) return;
+
+    const pieces = editor.querySelectorAll('.piece');
+    pieces.forEach(piece => {
+      piece.addEventListener('click', () => {
+        pieces.forEach(p => p.classList.remove('selected'));
+        piece.classList.add('selected');
+        this.selectedPiece = piece.dataset.type;
+        if (selectedValueEl) {
+          selectedValueEl.textContent = this.formatPieceName(this.selectedPiece);
+        }
+      });
+    });
+  },
+
+  formatPieceName(type) {
+    if (!type) return 'None';
+    const names = {
+      'horizontal': 'Horizontal Road',
+      'vertical': 'Vertical Road',
+      'corner-right-up': 'Right Corner (↑)',
+      'corner-right-down': 'Right Corner (↓)',
+      'corner-left-up': 'Left Corner (↑)',
+      'corner-left-down': 'Left Corner (↓)'
+    };
+    return names[type] || type;
   },
 
   startCarAnimationIfNeeded() {
     if (this.carAnimationRunning || !this.carSvgs) return;
-    
+
     this.carAnimationRunning = true;
     this.activeCars = [];
-    this.nextVehicleId = 1;
+    let nextVehicleId = 1;
 
-    const getAdjacentLane = (lane) => (lane % 2 === 0 ? lane + 1 : lane - 1);
-    const rangesOverlap = (aStart, aEnd, bStart, bEnd) => aStart < bEnd && bStart < aEnd;
+    const getOvertakingLane = (lane) => {
+      if (lane === 0) return 1;
+      if (lane === 3) return 2;
+      return lane;
+    };
 
-    const isLaneClearForVehicle = (lane, x, width, ignoreId) => {
-      const buffer = 20;
-      const aStart = x - buffer;
-      const aEnd = x + width + buffer;
+    const isLaneClear = (lane, x, width, ignoreId) => {
+      const buffer = 30;
+      const checkStart = x - buffer;
+      const checkEnd = x + width + buffer;
 
       for (const other of this.activeCars) {
         if (other.id === ignoreId) continue;
         if (other.lane !== lane) continue;
 
-        const bStart = other.x;
-        const bEnd = other.x + other.width;
-        if (rangesOverlap(aStart, aEnd, bStart, bEnd)) return false;
-      }
+        const otherStart = other.x;
+        const otherEnd = other.x + other.width;
 
+        if (checkStart < otherEnd && checkEnd > otherStart) return false;
+      }
       return true;
     };
 
-    const moveVehicleToLane = (car, newLane) => {
+    const changeLane = (car, newLane) => {
       if (car.isChangingLane) return false;
-      
+
       const newContainer = document.getElementById(`lane${newLane}Container`);
       const oldContainer = document.getElementById(`lane${car.lane}Container`);
-      if (!newContainer || !oldContainer) return false;
+      const roadContainer = document.getElementById('road');
+      if (!newContainer || !oldContainer || !roadContainer) return false;
 
       car.isChangingLane = true;
-      car.targetLane = newLane;
 
+      const roadRect = roadContainer.getBoundingClientRect();
       const oldRect = oldContainer.getBoundingClientRect();
       const newRect = newContainer.getBoundingClientRect();
-      const yOffset = newRect.top - oldRect.top;
 
-      car.el.style.transition = 'transform 0.3s ease-out';
-      const currentTransform = car.el.style.transform || '';
-      const baseTransform = currentTransform.replace(/translateY\([^)]+\)/g, '').trim();
-      car.el.style.transform = `${baseTransform} translateY(${yOffset}px)`;
+      const startY = oldRect.top + oldRect.height / 2 - roadRect.top;
+      const targetY = newRect.top + newRect.height / 2 - roadRect.top;
+
+      const baseTransform = car.direction === -1 ? 'scaleX(-1)' : '';
+
+      car.el.style.position = 'absolute';
+      car.el.style.top = `${startY}px`;
+      car.el.style.left = `${car.x}px`;
+      car.el.style.transform = `translateY(-50%) ${baseTransform}`;
+      car.el.style.zIndex = '100';
+      car.el.style.transition = 'top 0.25s ease-out';
+
+      roadContainer.appendChild(car.el);
+
+      requestAnimationFrame(() => {
+        car.el.style.top = `${targetY}px`;
+      });
 
       setTimeout(() => {
         if (!car.el || !car.el.isConnected) {
           car.isChangingLane = false;
           return;
         }
-        
+
         car.lane = newLane;
-        car.el.style.transition = 'none';
-        car.el.style.transform = baseTransform;
-        newContainer.appendChild(car.el);
         car.lastLaneChangeX = car.x;
+
+        car.el.style.transition = 'none';
+        car.el.style.top = '50%';
+        car.el.style.left = `${car.x}px`;
+        car.el.style.transform = `translateY(-50%) ${baseTransform}`;
+        car.el.style.zIndex = '10';
+
+        newContainer.appendChild(car.el);
         car.isChangingLane = false;
-        car.targetLane = null;
-      }, 300);
+      }, 250);
 
       return true;
     };
-    
+
+    const spawnVehicle = (laneConfig) => {
+      if (!this.vehicleTypes || this.vehicleTypes.length === 0) return;
+
+      const vehicleType = this.vehicleTypes[Math.floor(Math.random() * this.vehicleTypes.length)];
+      const isRightSide = laneConfig.direction === 1;
+      const slowLane = isRightSide ? 0 : 3;
+      const overtakeLane = isRightSide ? 1 : 2;
+
+      const containerWidth = 1400;
+      const buffer = 40;
+
+      let spawnLane = slowLane;
+      let spawnX = laneConfig.direction === 1 ? -vehicleType.width : containerWidth + vehicleType.width;
+
+      const carsInSlowLane = this.activeCars.filter(c => c.lane === slowLane);
+      const nearestInSlow = laneConfig.direction === 1
+        ? (carsInSlowLane.length > 0 ? Math.min(...carsInSlowLane.map(c => c.x)) : Infinity)
+        : (carsInSlowLane.length > 0 ? Math.max(...carsInSlowLane.map(c => c.x + c.width)) : -Infinity);
+
+      const slowLaneBlocked = laneConfig.direction === 1
+        ? nearestInSlow < vehicleType.width + buffer * 2
+        : nearestInSlow > containerWidth - vehicleType.width - buffer * 2;
+
+      if (slowLaneBlocked) {
+        const carsInOvertake = this.activeCars.filter(c => c.lane === overtakeLane);
+        const nearestInOvertake = laneConfig.direction === 1
+          ? (carsInOvertake.length > 0 ? Math.min(...carsInOvertake.map(c => c.x)) : Infinity)
+          : (carsInOvertake.length > 0 ? Math.max(...carsInOvertake.map(c => c.x + c.width)) : -Infinity);
+
+        const overtakeLaneClear = laneConfig.direction === 1
+          ? nearestInOvertake > vehicleType.width + buffer
+          : nearestInOvertake < containerWidth - vehicleType.width - buffer;
+
+        if (overtakeLaneClear) {
+          spawnLane = overtakeLane;
+        } else {
+          return;
+        }
+      }
+
+      const container = document.getElementById(`lane${spawnLane}Container`);
+      if (!container) return;
+
+      const carEl = document.createElement('div');
+      carEl.className = `vehicle ${vehicleType.type}`;
+      carEl.innerHTML = this.carSvgs[vehicleType.type];
+      carEl.style.cssText = `
+        position: absolute;
+        left: ${spawnX}px;
+        top: 50%;
+        transform: translateY(-50%) ${laneConfig.direction === -1 ? 'scaleX(-1)' : ''};
+        width: ${vehicleType.width}px;
+        height: ${vehicleType.height}px;
+        z-index: 10;
+      `;
+
+      container.appendChild(carEl);
+
+      this.activeCars.push({
+        id: nextVehicleId++,
+        el: carEl,
+        x: spawnX,
+        width: vehicleType.width,
+        speed: vehicleType.speed * (0.9 + Math.random() * 0.2),
+        direction: laneConfig.direction,
+        lane: spawnLane,
+        preferredLane: slowLane,
+        lastLaneChangeX: spawnLane === overtakeLane ? spawnX : null,
+        isChangingLane: false
+      });
+    };
+
     const animate = () => {
       if (!this.carAnimationRunning) return;
-      
-      this.carTypes.forEach(type => {
-        if (Math.random() < type.spawnRate) {
-          this.spawnCar(type);
-        }
-      });
 
-      const carsByLane = new Map();
-      for (const car of this.activeCars) {
-        if (!carsByLane.has(car.lane)) carsByLane.set(car.lane, []);
-        carsByLane.get(car.lane).push(car);
-      }
-
-      for (const [lane, laneCars] of carsByLane.entries()) {
-        if (laneCars.length === 0) continue;
-
-        const direction = laneCars[0].direction;
-        const sorted = laneCars.slice().sort((a, b) => a.x - b.x);
-
-        if (direction === 1) {
-          sorted.reverse();
-          let frontCar = null;
-          const buffer = 20;
-
-          for (const car of sorted) {
-            const desiredDx = car.baseSpeed;
-            let nextX = car.x + desiredDx;
-            let blockedBy = null;
-
-            if (frontCar) {
-              const maxX = frontCar.x - (car.width + buffer);
-              nextX = Math.min(nextX, maxX);
-              if (nextX < car.x) nextX = car.x;
-
-              if (nextX < car.x + desiredDx - 0.001) blockedBy = frontCar;
+      try {
+        if (this.laneConfigs && this.vehicleTypes) {
+          for (const config of this.laneConfigs) {
+            if (config.isSlowLane && Math.random() < config.spawnRate) {
+              spawnVehicle(config);
             }
-
-            car.currentSpeed = (nextX - car.x);
-            car.x = nextX;
-
-            if (blockedBy) {
-              const adjacentLane = getAdjacentLane(car.lane);
-              const wantsOvertake = car.lane === car.originalLane;
-              const distanceSinceChange = Math.abs((car.lastLaneChangeX ?? car.x) - car.x);
-              const canTryChange = (car.lastLaneChangeX == null) || distanceSinceChange > 60;
-
-              if (wantsOvertake && canTryChange && isLaneClearForVehicle(adjacentLane, car.x, car.width, car.id)) {
-                if (moveVehicleToLane(car, adjacentLane)) {
-                  car.overtakeTargetId = blockedBy.id;
-                  car.overtakeTargetLane = car.originalLane;
-                }
-              }
-            } else if (car.lane !== car.originalLane) {
-              const adjacentLane = getAdjacentLane(car.lane);
-              const mergeLane = car.originalLane;
-              const distanceSinceChange = Math.abs((car.lastLaneChangeX ?? car.x) - car.x);
-              const canTryMerge = (car.lastLaneChangeX == null) || distanceSinceChange > 60;
-
-              let passedTarget = true;
-              if (car.overtakeTargetId) {
-                const target = this.activeCars.find(c => c.id === car.overtakeTargetId);
-                if (target && target.lane === mergeLane) {
-                  passedTarget = car.x > (target.x + target.width + 10);
-                }
-              }
-
-              if (canTryMerge && passedTarget && isLaneClearForVehicle(mergeLane, car.x, car.width, car.id)) {
-                moveVehicleToLane(car, mergeLane);
-              }
-            }
-
-            frontCar = car;
-          }
-        } else {
-          let frontCar = null;
-          const buffer = 20;
-
-          for (const car of sorted) {
-            const desiredDx = car.baseSpeed;
-            let nextX = car.x - desiredDx;
-            let blockedBy = null;
-
-            if (frontCar) {
-              const minX = frontCar.x + (frontCar.width + buffer);
-              nextX = Math.max(nextX, minX);
-              if (nextX > car.x) nextX = car.x;
-
-              if (nextX > car.x - desiredDx + 0.001) blockedBy = frontCar;
-            }
-
-            car.currentSpeed = (car.x - nextX);
-            car.x = nextX;
-
-            if (blockedBy) {
-              const adjacentLane = getAdjacentLane(car.lane);
-              const wantsOvertake = car.lane === car.originalLane;
-              const distanceSinceChange = Math.abs((car.lastLaneChangeX ?? car.x) - car.x);
-              const canTryChange = (car.lastLaneChangeX == null) || distanceSinceChange > 60;
-
-              if (wantsOvertake && canTryChange && isLaneClearForVehicle(adjacentLane, car.x, car.width, car.id)) {
-                if (moveVehicleToLane(car, adjacentLane)) {
-                  car.overtakeTargetId = blockedBy.id;
-                  car.overtakeTargetLane = car.originalLane;
-                }
-              }
-            } else if (car.lane !== car.originalLane) {
-              const mergeLane = car.originalLane;
-              const distanceSinceChange = Math.abs((car.lastLaneChangeX ?? car.x) - car.x);
-              const canTryMerge = (car.lastLaneChangeX == null) || distanceSinceChange > 60;
-
-              let passedTarget = true;
-              if (car.overtakeTargetId) {
-                const target = this.activeCars.find(c => c.id === car.overtakeTargetId);
-                if (target && target.lane === mergeLane) {
-                  passedTarget = (car.x + car.width) < (target.x - 10);
-                }
-              }
-
-              if (canTryMerge && passedTarget && isLaneClearForVehicle(mergeLane, car.x, car.width, car.id)) {
-                moveVehicleToLane(car, mergeLane);
-              }
-            }
-
-            frontCar = car;
           }
         }
-      }
 
-      for (let i = this.activeCars.length - 1; i >= 0; i--) {
-        const car = this.activeCars[i];
-        const laneContainer = document.getElementById(`lane${car.lane}Container`);
-        if (!laneContainer) continue;
-        const containerWidth = laneContainer.offsetWidth || 800;
-
-        if ((car.direction === 1 && car.x > containerWidth + 100) ||
-            (car.direction === -1 && car.x < -100)) {
-          car.el.remove();
-          this.activeCars.splice(i, 1);
-          continue;
+        const carsByLane = new Map();
+        for (const car of this.activeCars) {
+          if (!carsByLane.has(car.lane)) carsByLane.set(car.lane, []);
+          carsByLane.get(car.lane).push(car);
         }
 
-        car.el.style.left = `${car.x}px`;
+        for (const [lane, laneCars] of carsByLane.entries()) {
+          if (laneCars.length === 0) continue;
+
+          const direction = laneCars[0].direction;
+          const sorted = laneCars.slice().sort((a, b) => a.x - b.x);
+
+          if (direction === 1) {
+            sorted.reverse();
+            let frontCar = null;
+            const buffer = 20;
+
+            for (const car of sorted) {
+              let targetSpeed = car.speed;
+              let isBlocked = false;
+
+              if (frontCar) {
+                const minGap = car.width + buffer;
+                const maxX = frontCar.x - minGap;
+
+                if (car.x + targetSpeed > maxX) {
+                  targetSpeed = Math.max(0, maxX - car.x);
+                  isBlocked = targetSpeed < car.speed * 0.5;
+                }
+              }
+
+              car.x += targetSpeed;
+
+              if (isBlocked && !car.isChangingLane && car.preferredLane !== undefined) {
+                // Only cars in preferred SLOW lane (0) should overtake to lane 1
+                // Fast lane cars (1) should NOT undertake - just follow
+                if (car.lane === 0 && car.preferredLane === 0) {
+                  const distanceSinceChange = car.lastLaneChangeX !== null
+                    ? Math.abs(car.x - car.lastLaneChangeX)
+                    : Infinity;
+
+                  if (distanceSinceChange > 80 && isLaneClear(1, car.x, car.width, car.id)) {
+                    changeLane(car, 1);
+                  }
+                }
+              } else if (car.lane !== car.preferredLane && !car.isChangingLane) {
+                // Return to preferred lane when clear
+                const distanceSinceChange = car.lastLaneChangeX !== null
+                  ? Math.abs(car.x - car.lastLaneChangeX)
+                  : Infinity;
+
+                if (distanceSinceChange > 100 && isLaneClear(car.preferredLane, car.x, car.width, car.id)) {
+                  changeLane(car, car.preferredLane);
+                }
+              }
+
+              frontCar = car;
+            }
+          } else {
+            let frontCar = null;
+            const buffer = 20;
+
+            for (const car of sorted) {
+              let targetSpeed = car.speed;
+              let isBlocked = false;
+
+              if (frontCar) {
+                const minGap = frontCar.width + buffer;
+                const minX = frontCar.x + minGap;
+
+                if (car.x - targetSpeed < minX) {
+                  targetSpeed = Math.max(0, car.x - minX);
+                  isBlocked = targetSpeed < car.speed * 0.5;
+                }
+              }
+
+              car.x -= targetSpeed;
+
+              if (isBlocked && !car.isChangingLane && car.preferredLane !== undefined) {
+                // Only cars in preferred SLOW lane (3) should overtake to lane 2
+                // Fast lane cars (2) should NOT undertake - just follow
+                if (car.lane === 3 && car.preferredLane === 3) {
+                  const distanceSinceChange = car.lastLaneChangeX !== null
+                    ? Math.abs(car.x - car.lastLaneChangeX)
+                    : Infinity;
+
+                  if (distanceSinceChange > 80 && isLaneClear(2, car.x, car.width, car.id)) {
+                    changeLane(car, 2);
+                  }
+                }
+              } else if (car.lane !== car.preferredLane && !car.isChangingLane) {
+                // Return to preferred lane when clear
+                const distanceSinceChange = car.lastLaneChangeX !== null
+                  ? Math.abs(car.x - car.lastLaneChangeX)
+                  : Infinity;
+
+                if (distanceSinceChange > 100 && isLaneClear(car.preferredLane, car.x, car.width, car.id)) {
+                  changeLane(car, car.preferredLane);
+                }
+              }
+
+              frontCar = car;
+            }
+          }
+        }
+
+        const containerWidth = 1400;
+        for (let i = this.activeCars.length - 1; i >= 0; i--) {
+          const car = this.activeCars[i];
+          if (!car || !car.el) continue;
+
+          if ((car.direction === 1 && car.x > containerWidth + 150) ||
+              (car.direction === -1 && car.x < -150)) {
+            car.el.remove();
+            this.activeCars.splice(i, 1);
+            continue;
+          }
+
+          car.el.style.left = `${car.x}px`;
+        }
+      } catch (err) {
+        console.error('Animation error:', err);
       }
-      
+
       this.carAnimationId = requestAnimationFrame(animate);
     };
-    
+
     animate();
   },
 
-  spawnCar(type) {
-    const laneContainer = document.getElementById(`lane${type.lane}Container`);
-    if (!laneContainer) return;
-    
-    const containerWidth = laneContainer.offsetWidth || 800;
-    const x = type.direction === 1 ? -type.width : containerWidth + type.width;
-
-    const carsInLane = this.activeCars.filter(c => c.lane === type.lane);
-    if (carsInLane.length > 0) {
-      const buffer = 20;
-
-      if (type.direction === 1) {
-        const nearestX = Math.min(...carsInLane.map(c => c.x));
-        if (nearestX - x < (type.width + buffer)) return;
-      } else {
-        const nearestX = Math.max(...carsInLane.map(c => c.x + (c.width ?? type.width)));
-        if (x < nearestX + buffer) return;
-      }
+  startTraffic() {
+    if (!this.startCell) {
+      console.log('No start cell set');
+      return;
     }
-    
-    const carEl = document.createElement('div');
-    carEl.className = `vehicle ${type.type}`;
-    carEl.innerHTML = this.carSvgs[type.type];
-    carEl.style.cssText = `
-      position: absolute;
-      left: ${x}px;
-      top: 50%;
-      transform: translateY(-50%) ${type.direction === -1 ? 'scaleX(-1)' : ''};
-      width: ${type.width}px;
-      height: ${type.height}px;
-      cursor: pointer;
-      transition: transform 0.1s, opacity 0.1s;
-      z-index: 10;
-    `;
-    
-    carEl.addEventListener('click', (e) => {
-      e.stopPropagation();
-      e.preventDefault();
-      
-      carEl.style.pointerEvents = 'none';
-      
-      if (carEl.dataset.caught === 'true') return;
-      carEl.dataset.caught = 'true';
-      
-      const index = this.activeCars.findIndex(c => c.el === carEl);
-      if (index > -1) this.activeCars.splice(index, 1);
-      
-      this.catchCar(carEl, e.clientX, e.clientY);
-    }, { once: true });
-    
-    laneContainer.appendChild(carEl);
-    
-    const assignedId = this.nextVehicleId++;
-    this.activeCars.push({
-      id: assignedId,
-      el: carEl,
-      x: x,
-      width: type.width,
-      height: type.height,
-      baseSpeed: type.speed * (0.9 + Math.random() * 0.2),
-      direction: type.direction,
-      lane: type.lane,
-      originalLane: type.lane,
-      lastLaneChangeX: null,
-      overtakeTargetId: null,
-      overtakeTargetLane: null,
-      type: type.type
-    });
+    this.startGridAnimation();
   },
 
-  stopCarAnimation() {
+  startGridAnimation() {
+    if (this.carAnimationRunning) return;
+    this.carAnimationRunning = true;
+    this.activeCars = [];
+    let nextVehicleId = 1;
+
+    const spawnRate = 0.03;
+    const gridSize = 10;
+    
+    // Compute grid metrics ONCE when Start is clicked
+    const gridContainer = document.getElementById('gridContainer');
+    const gridRect = gridContainer.getBoundingClientRect();
+    const computedCellSize = gridRect.width / gridSize;
+    
+    // Store all cell positions for accurate spawning
+    const cellPositions = [];
+    for (let row = 0; row < gridSize; row++) {
+      const rowPositions = [];
+      for (let col = 0; col < gridSize; col++) {
+        const cellEl = this.gridData[row][col].el;
+        const cellRect = cellEl.getBoundingClientRect();
+        rowPositions.push({
+          left: cellRect.left - gridRect.left,
+          top: cellRect.top - gridRect.top,
+          width: cellRect.width,
+          height: cellRect.height
+        });
+      }
+      cellPositions.push(rowPositions);
+    }
+    
+    // Use stored cell size
+    const getCellSize = () => computedCellSize;
+
+    // Direction helpers: 0=right, 1=down, 2=left, 3=up
+    const dirVectors = [
+      { dx: 1, dy: 0 },   // right
+      { dx: 0, dy: 1 },   // down  
+      { dx: -1, dy: 0 },  // left
+      { dx: 0, dy: -1 }   // up
+    ];
+
+    // Get which directions a piece connects
+    const getPieceConnections = (pieceType) => {
+      switch (pieceType) {
+        case 'horizontal': return [0, 2]; // right, left
+        case 'vertical': return [1, 3];   // down, up
+        case 'corner-right-up': return [0, 3];    // right, up (┐)
+        case 'corner-right-down': return [0, 1];  // right, down (┘)
+        case 'corner-left-up': return [2, 3];     // left, up (┌)
+        case 'corner-left-down': return [2, 1];   // left, down (└)
+        default: return [];
+      }
+    };
+
+    // Get exit direction based on entry direction for a piece
+    const getExitDirection = (pieceType, entryDir) => {
+      const connections = getPieceConnections(pieceType);
+      const oppositeEntry = (entryDir + 2) % 4;
+      const exitDir = connections.find(d => d !== oppositeEntry);
+      return exitDir !== undefined ? exitDir : null;
+    };
+
+    // Lane configurations - 4 lanes per road piece (2 in each direction)
+    // For horizontal: lanes 0,1 are right-moving (bottom), lanes 2,3 are left-moving (top)
+    // For vertical: lanes 0,1 are down-moving (right side), lanes 2,3 are up-moving (left side)
+    const laneConfigs = [
+      { lane: 0, offset: 0.75, isSlowLane: true, spawnRate: 0.025, direction: 0 },   // Bottom outer slow (right/down)
+      { lane: 1, offset: 0.62, isSlowLane: false, spawnRate: 0, direction: 0 },    // Bottom inner fast (right/down)
+      { lane: 2, offset: 0.38, isSlowLane: false, spawnRate: 0, direction: 2 },    // Top inner fast (left/up)
+      { lane: 3, offset: 0.25, isSlowLane: true, spawnRate: 0.025, direction: 2 }   // Top outer slow (left/up)
+    ];
+
+    const spawnVehicle = () => {
+      if (!this.vehicleTypes || this.vehicleTypes.length === 0) return;
+      if (!this.startCell) return;
+
+      const startCellData = this.gridData[this.startCell.row][this.startCell.col];
+      if (!startCellData.type) return;
+
+      const connections = getPieceConnections(startCellData.type);
+      if (connections.length === 0) return;
+      
+      // Determine initial direction from start piece connections
+      const initialDir = connections[0];
+
+      // Check all 4 lanes for a clear spot
+      const availableLanes = [];
+      const spawnBuffer = 15; // Minimum distance between cars
+      
+      for (let laneIdx = 0; laneIdx < 4; laneIdx++) {
+        const cellSize = computedCellSize;
+        const laneOffset = laneConfigs[laneIdx].offset * cellSize;
+        const laneDir = laneConfigs[laneIdx].direction;
+        
+        // Get pre-computed position for spawn check
+        const startCellPos = cellPositions[this.startCell.row][this.startCell.col];
+        
+        // Calculate spawn position for this lane
+        let spawnX, spawnY;
+        if (initialDir === 0 || initialDir === 2) {
+          // Horizontal piece - lanes are vertical offsets
+          spawnY = startCellPos.top + laneOffset;
+          // Spawn from appropriate edge based on lane direction
+          if (laneDir === 0) {
+            spawnX = startCellPos.left; // Left edge for right-moving
+          } else {
+            spawnX = startCellPos.left + startCellPos.width; // Right edge for left-moving
+          }
+        } else {
+          // Vertical piece - lanes are horizontal offsets  
+          spawnX = startCellPos.left + laneOffset;
+          // Spawn from appropriate edge based on lane direction
+          if (laneDir === 1) {
+            spawnY = startCellPos.top; // Top edge for down-moving
+          } else {
+            spawnY = startCellPos.top + startCellPos.height; // Bottom edge for up-moving
+          }
+        }
+        
+        // Check if any car is too close in this lane at spawn position
+        let laneClear = true;
+        for (const otherCar of this.activeCars) {
+          if (otherCar.lane !== laneIdx) continue;
+          // Check cars in same cell or very close
+          const dx = otherCar.x - spawnX;
+          const dy = otherCar.y - spawnY;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < spawnBuffer) {
+            laneClear = false;
+            break;
+          }
+        }
+        
+        if (laneClear) {
+          availableLanes.push(laneIdx);
+        }
+      }
+      
+      if (availableLanes.length === 0) return; // No clear lanes
+
+      const vehicleType = this.vehicleTypes[Math.floor(Math.random() * this.vehicleTypes.length)];
+      const laneIdx = availableLanes[Math.floor(Math.random() * availableLanes.length)];
+      const cellSize = computedCellSize;
+      const laneOffset = laneConfigs[laneIdx].offset * cellSize;
+      const laneDir = laneConfigs[laneIdx].direction;
+      const vec = dirVectors[laneDir];
+
+      const carEl = document.createElement('div');
+      carEl.className = `vehicle ${vehicleType.type}`;
+      carEl.innerHTML = this.carSvgs[vehicleType.type];
+      
+      // Get pre-computed position of the start cell
+      const startCellPos = cellPositions[this.startCell.row][this.startCell.col];
+      
+      // Spawn from appropriate edge based on lane direction
+      let startX, startY;
+      if (initialDir === 0 || initialDir === 2) {
+        // Horizontal piece - lanes are vertical offsets
+        startY = startCellPos.top + laneOffset;
+        if (laneDir === 0) {
+          startX = startCellPos.left; // Left edge for right-moving
+        } else {
+          startX = startCellPos.left + startCellPos.width; // Right edge for left-moving
+        }
+      } else {
+        // Vertical piece - lanes are horizontal offsets  
+        startX = startCellPos.left + laneOffset;
+        if (laneDir === 1) {
+          startY = startCellPos.top; // Top edge for down-moving
+        } else {
+          startY = startCellPos.top + startCellPos.height; // Bottom edge for up-moving
+        }
+      }
+      
+      carEl.style.cssText = `
+        position: absolute;
+        left: ${startX}px;
+        top: ${startY}px;
+        transform: translate(0, -50%) ${laneDir === 2 ? 'scaleX(-1)' : ''};
+        width: ${vehicleType.width}px;
+        height: ${vehicleType.height}px;
+        z-index: 100;
+        pointer-events: none;
+      `;
+
+      gridContainer.appendChild(carEl);
+
+      this.activeCars.push({
+        id: nextVehicleId++,
+        el: carEl,
+        x: startX,
+        y: startY,
+        gridCol: this.startCell.col,
+        gridRow: this.startCell.row,
+        vx: vec.dx * vehicleType.speed,
+        vy: vec.dy * vehicleType.speed,
+        direction: laneDir,
+        width: vehicleType.width,
+        height: vehicleType.height,
+        speed: vehicleType.speed,
+        vehicleType: vehicleType.type,
+        lane: laneIdx,
+        preferredLane: laneIdx
+      });
+    };
+
+    // Helper to check if lane is clear ahead
+    const isLaneClearAhead = (car, checkLane, bufferDistance) => {
+      for (const other of this.activeCars) {
+        if (other.id === car.id) continue;
+        if (other.lane !== checkLane) continue;
+        
+        // Only check cars ahead in the direction of travel
+        if (car.direction === 0) { // right
+          if (other.x > car.x && other.x < car.x + bufferDistance) return false;
+        } else if (car.direction === 2) { // left
+          if (other.x < car.x && other.x > car.x - bufferDistance) return false;
+        } else if (car.direction === 1) { // down
+          if (other.y > car.y && other.y < car.y + bufferDistance) return false;
+        } else if (car.direction === 3) { // up
+          if (other.y < car.y && other.y > car.y - bufferDistance) return false;
+        }
+      }
+      return true;
+    };
+
+    // Helper to change lane
+    const changeLane = (car, newLane) => {
+      if (car.isChangingLane) return false;
+      
+      const newOffset = laneConfigs[newLane].offset * getCellSize();
+      const oldOffset = laneConfigs[car.lane].offset * getCellSize();
+      
+      // Update lane immediately
+      car.lane = newLane;
+      car.isChangingLane = true;
+      
+      // Smooth transition of position
+      const startOffset = oldOffset;
+      const targetOffset = newOffset;
+      const transitionDuration = 300; // ms
+      const startTime = Date.now();
+      
+      const doTransition = () => {
+        const elapsed = Date.now() - startTime;
+        const progress = Math.min(elapsed / transitionDuration, 1);
+        
+        // Interpolate position
+        const currentOffset = startOffset + (targetOffset - startOffset) * progress;
+        
+        if (car.direction === 0 || car.direction === 2) {
+          // Horizontal - offset is Y
+          car.y = car.gridRow * getCellSize() + currentOffset;
+        } else {
+          // Vertical - offset is X
+          car.x = car.gridCol * getCellSize() + currentOffset;
+        }
+        
+        if (progress < 1) {
+          requestAnimationFrame(doTransition);
+        } else {
+          car.isChangingLane = false;
+        }
+      };
+      
+      requestAnimationFrame(doTransition);
+      return true;
+    };
+
+    const animate = () => {
+      if (!this.carAnimationRunning) return;
+
+      try {
+        if (Math.random() < spawnRate) {
+          spawnVehicle();
+        }
+
+        const cellSize = getCellSize();
+        const gridWidth = gridSize * cellSize;
+        const gridHeight = gridSize * cellSize;
+
+        // Process cars by direction for overtaking logic
+        for (let i = 0; i < this.activeCars.length; i++) {
+          const car = this.activeCars[i];
+          if (!car || !car.el || car.isChangingLane) continue;
+
+          const buffer = 20; // Distance to check ahead
+          
+          // Check if blocked in current lane
+          const blocked = !isLaneClearAhead(car, car.lane, buffer + car.width);
+          
+          if (blocked) {
+            // Try to overtake if in slow lane
+            if (car.lane === 0 && isLaneClearAhead(car, 1, buffer + car.width)) {
+              // Overtake from lane 0 to lane 1
+              changeLane(car, 1);
+            } else if (car.lane === 3 && isLaneClearAhead(car, 2, buffer + car.width)) {
+              // Overtake from lane 3 to lane 2
+              changeLane(car, 2);
+            }
+          } else {
+            // Not blocked - return to preferred slow lane if in fast lane
+            if (car.lane === 1 && car.preferredLane === 0 && isLaneClearAhead(car, 0, buffer + car.width)) {
+              changeLane(car, 0);
+            } else if (car.lane === 2 && car.preferredLane === 3 && isLaneClearAhead(car, 3, buffer + car.width)) {
+              changeLane(car, 3);
+            }
+          }
+        }
+
+        for (let i = this.activeCars.length - 1; i >= 0; i--) {
+          const car = this.activeCars[i];
+          if (!car || !car.el) continue;
+
+          // Move car
+          car.x += car.vx;
+          car.y += car.vy;
+
+          // Check if out of grid bounds
+          if (car.x < -50 || car.x > gridWidth + 50 || car.y < -50 || car.y > gridHeight + 50) {
+            car.el.remove();
+            this.activeCars.splice(i, 1);
+            continue;
+          }
+
+          // Determine which cell the car is now in
+          const cellSize = getCellSize();
+          const newCol = Math.floor(car.x / cellSize);
+          const newRow = Math.floor(car.y / cellSize);
+
+          // If car entered a new cell
+          if (newCol !== car.gridCol || newRow !== car.gridRow) {
+            // Check bounds
+            if (newCol < 0 || newCol >= gridSize || newRow < 0 || newRow >= gridSize) {
+              car.el.remove();
+              this.activeCars.splice(i, 1);
+              continue;
+            }
+
+            const newCellData = this.gridData[newRow][newCol];
+            
+            // If no piece in this cell, car disappears
+            if (!newCellData.type) {
+              car.el.remove();
+              this.activeCars.splice(i, 1);
+              continue;
+            }
+
+            // Get exit direction based on how we entered
+            const exitDir = getExitDirection(newCellData.type, car.direction);
+            
+            if (exitDir === null) {
+              // No valid exit - car disappears
+              car.el.remove();
+              this.activeCars.splice(i, 1);
+              continue;
+            }
+
+            // Calculate the lane offset (perpendicular to direction)
+            const cellSize = getCellSize();
+            const laneOffset = laneConfigs[car.lane].offset * cellSize;
+
+            // Update car velocity and direction
+            const vec = dirVectors[exitDir];
+            car.vx = vec.dx * car.speed;
+            car.vy = vec.dy * car.speed;
+            
+            // Recalculate position to maintain lane offset when entering new cell
+            if (exitDir !== car.direction) {
+              // Car turned - recalculate position based on lane
+              const cellSize = getCellSize();
+              const cellLeft = newCol * cellSize;
+              const cellTop = newRow * cellSize;
+              
+              if (exitDir === 0) { // going right
+                car.y = cellTop + laneOffset;
+              } else if (exitDir === 2) { // going left
+                car.y = cellTop + laneOffset;
+              } else if (exitDir === 1) { // going down
+                car.x = cellLeft + laneOffset;
+              } else if (exitDir === 3) { // going up
+                car.x = cellLeft + laneOffset;
+              }
+            }
+            
+            car.direction = exitDir;
+
+            // Update car rotation based on direction
+            let rotation = 0;
+            if (exitDir === 0) rotation = 0;      // right
+            else if (exitDir === 1) rotation = 90;  // down
+            else if (exitDir === 2) rotation = 180; // left  
+            else if (exitDir === 3) rotation = -90; // up
+
+            if (exitDir === 2) {
+              car.el.style.transform = `translate(0, -50%) scaleX(-1)`;
+            } else {
+              car.el.style.transform = `translate(0, -50%) rotate(${rotation}deg)`;
+            }
+
+            car.gridCol = newCol;
+            car.gridRow = newRow;
+          }
+
+          car.el.style.left = `${car.x}px`;
+          car.el.style.top = `${car.y}px`;
+        }
+      } catch (err) {
+        console.error('Animation error:', err);
+      }
+
+      this.carAnimationId = requestAnimationFrame(animate);
+    };
+
+    animate();
+  },
+
+  stopTraffic() {
     this.carAnimationRunning = false;
     if (this.carAnimationId) {
       cancelAnimationFrame(this.carAnimationId);
       this.carAnimationId = null;
     }
+  },
+
+  resetTraffic() {
+    this.stopTraffic();
     this.activeCars.forEach(c => c.el.remove());
     this.activeCars = [];
   },
 
-  catchCar(carEl, x, y) {
-    carEl.style.transform = carEl.style.transform.replace('scaleX(-1)', '') + ' scale(1.3)';
-    carEl.style.opacity = '0';
-    setTimeout(() => carEl.remove(), 100);
-    
-    const amount = catchCarGame();
-    
-    this.createFloatingText('+1 Car', x, y);
-    
-    this.updateDisplay();
-  },
-
-  catchFish(fishEl, x, y) {
-    fishEl.style.transform = 'scale(1.5)';
-    fishEl.style.opacity = '0';
-    setTimeout(() => fishEl.remove(), 100);
-    
-    const amount = catchFishGame();
-    
-    this.createFloatingText('+1 Fish', x, y);
-    
-    this.updateDisplay();
-  },
-
-  updateShopForResource(resourceType) {
-    const shopGrid = document.getElementById("shopGrid");
-    if (!shopGrid) return;
-    
-    const cards = shopGrid.querySelectorAll('.upgradeCard');
-    cards.forEach(card => {
-      const upgradeId = card.dataset.upgradeId;
-      const upgrade = globals.getUpgrades()[upgradeId];
-      
-      if (upgrade && upgrade.resourceType === resourceType) {
-        card.style.display = 'flex';
-      } else {
-        card.style.display = 'none';
-      }
-    });
-  },
-
-  createRipple(e, container) {
-    const ripple = document.createElement("div");
-    ripple.className = "ripple";
-    
-    const rect = container.getBoundingClientRect();
-    const x = (e.clientX || rect.left + rect.width / 2) - rect.left;
-    const y = (e.clientY || rect.top + rect.height / 2) - rect.top;
-    
-    ripple.style.left = `${x}px`;
-    ripple.style.top = `${y}px`;
-    
-    container.appendChild(ripple);
-    
-    setTimeout(() => ripple.remove(), 600);
+  stopCarAnimation() {
+    this.stopTraffic();
   },
 
   createFloatingText(text, x, y) {
     const container = document.getElementById("floatingTextContainer");
     if (!container) return;
-    
+
     const el = document.createElement("div");
     el.className = "floatingText";
     el.textContent = text;
     el.style.left = `${x}px`;
     el.style.top = `${y}px`;
-    
+
     container.appendChild(el);
-    
+
     requestAnimationFrame(() => {
       el.style.transform = "translateY(-60px)";
       el.style.opacity = "0";
     });
-    
+
     setTimeout(() => el.remove(), 800);
   },
 
-  async renderShop() {
-    const shopGrid = document.getElementById("shopGrid");
-    if (!shopGrid) return;
-    
-    if (!shopGrid.dataset.initialized) {
-      const snapshot = getHudSnapshot();
-      
-      const svgPromises = snapshot.upgrades.map(u => this.loadSvg(u.icon));
-      const namePromises = snapshot.upgrades.map(u => t(`upgrade_${u.id}`));
-      const [svgs, names] = await Promise.all([
-        Promise.all(svgPromises),
-        Promise.all(namePromises)
-      ]);
-      
-      shopGrid.innerHTML = snapshot.upgrades.map((upgrade, i) => `
-        <button class="upgradeCard locked" 
-                data-upgrade-id="${upgrade.id}">
-          <div class="upgradeIcon">
-            ${svgs[i] || ''}
-          </div>
-          <div class="upgradeInfo">
-            <div class="upgradeName">${names[i]}</div>
-            <div class="upgradeDesc">${upgrade.rpsContribution}/s each</div>
-            <div class="upgradeOwned">Owned: <span class="ownedCount">0</span></div>
-          </div>
-          <div class="upgradeCost"><span class="costValue">${formatNumber(upgrade.baseCost)}</span></div>
-        </button>
-      `).join('');
-      
-      shopGrid.addEventListener('click', (e) => {
-        const card = e.target.closest('.upgradeCard');
-        if (!card || card.classList.contains('locked')) return;
-        
-        const upgradeId = card.dataset.upgradeId;
-        if (purchaseUpgrade(upgradeId)) {
-          this.updateDisplay();
-          
-          card.style.transform = "scale(0.98)";
-          setTimeout(() => {
-            card.style.transform = "";
-          }, 100);
-        }
-      });
-      
-      shopGrid.dataset.initialized = "true";
-    }
-    
-    this.updateShopClasses();
-  },
-
-  updateShopClasses() {
-    const shopGrid = document.getElementById("shopGrid");
-    if (!shopGrid) return;
-    
-    const snapshot = getHudSnapshot();
-    
-    snapshot.upgrades.forEach(upgrade => {
-      const card = shopGrid.querySelector(`[data-upgrade-id="${upgrade.id}"]`);
-      if (!card) return;
-      
-      const isAffordable = upgrade.canAfford;
-      const currentlyAffordable = card.classList.contains('affordable');
-      
-      if (isAffordable && !currentlyAffordable) {
-        card.classList.add('affordable');
-        card.classList.remove('locked');
-      } else if (!isAffordable && currentlyAffordable) {
-        card.classList.remove('affordable');
-        card.classList.add('locked');
-      }
-      
-      const ownedEl = card.querySelector('.ownedCount');
-      const costEl = card.querySelector('.costValue');
-      const newCost = formatNumber(upgrade.cost);
-      
-      if (ownedEl && ownedEl.textContent !== String(upgrade.owned)) {
-        ownedEl.textContent = upgrade.owned;
-      }
-      if (costEl && costEl.textContent !== newCost) {
-        costEl.textContent = newCost;
-      }
-    });
-  },
-
   updateDisplay() {
-    const snapshot = getHudSnapshot();
-    
-    const resources = ['gems', 'wood', 'stone', 'gold'];
-    
-    resources.forEach(resource => {
-      const countEl = document.getElementById(`${resource}Count`);
-      const rpsEl = document.getElementById(`${resource}Rps`);
-      const powerEl = document.getElementById(`${resource}PowerDisplay`);
-      
-      if (countEl) countEl.textContent = formatNumber(snapshot[resource]);
-      if (rpsEl) rpsEl.textContent = `+${formatNumber(snapshot[`${resource}PerSecond`])}/s`;
-      
-      let clickPower = 1;
-      let clickMultiplier = 1;
-      switch(resource) {
-        case 'gems':
-          clickPower = globals.getGemsClickPower();
-          clickMultiplier = globals.getGemsClickMultiplier();
-          break;
-        case 'wood':
-          clickPower = globals.getWoodClickPower();
-          clickMultiplier = globals.getWoodClickMultiplier();
-          break;
-        case 'stone':
-          clickPower = globals.getStoneClickPower();
-          clickMultiplier = globals.getStoneClickMultiplier();
-          break;
-        case 'gold':
-          clickPower = globals.getGoldClickPower();
-          clickMultiplier = globals.getGoldClickMultiplier();
-          break;
-      }
-      
-      if (powerEl) powerEl.textContent = `+${formatNumber(clickPower * clickMultiplier)} per click`;
-    });
-    
-    const fishCountEl = document.getElementById("fishCount");
-    if (fishCountEl) fishCountEl.textContent = formatNumber(snapshot.fish);
-    
-    const carsCountEl = document.getElementById("carsCount");
-    if (carsCountEl) carsCountEl.textContent = formatNumber(snapshot.cars);
-    
-    const totalClicksEl = document.getElementById("totalClicks");
-    const totalEarnedEl = document.getElementById("totalEarned");
-    
-    if (totalClicksEl) totalClicksEl.textContent = `${formatNumber(snapshot.totalClicks)} clicks`;
-    if (totalEarnedEl) totalEarnedEl.textContent = `${formatNumber(
-      snapshot.totalGemsEarned + 
-      snapshot.totalWoodEarned + 
-      snapshot.totalStoneEarned + 
-      snapshot.totalGoldEarned +
-      snapshot.totalFishEarned +
-      snapshot.totalCarsEarned
-    )} earned`;
-    
-    this.updateShopClasses();
-    
-    const activeTab = document.querySelector('.resourceTab.active');
-    if (activeTab) {
-      this.updateShopForResource(activeTab.dataset.resource);
-    }
+    // No-op - no score display needed
   },
 
   updateHud() {
-    this.updateDisplay();
+    // No-op - no score display needed
+  },
+
+  createGrid() {
+    const container = document.getElementById('gridContainer');
+    if (!container) return;
+
+    container.innerHTML = '';
+    this.gridData = [];
+
+    // Initialize road piece SVGs
+    this.createRoadPieceSvgs();
+
+    for (let row = 0; row < 10; row++) {
+      const rowData = [];
+      for (let col = 0; col < 10; col++) {
+        const cell = document.createElement('div');
+        cell.className = 'gridCell';
+        cell.dataset.row = row;
+        cell.dataset.col = col;
+        cell.addEventListener('click', () => this.handleGridClick(row, col));
+        container.appendChild(cell);
+        rowData.push({ type: null, el: cell });
+      }
+      this.gridData.push(rowData);
+    }
+  },
+
+  createRoadPieceSvgs() {
+    // Horizontal road - 2 lanes in each direction (4 lanes total)
+    this.roadPieceSvgs.horizontal = `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+      <!-- Road background -->
+      <rect x="0" y="0" width="100" height="100" fill="#475569"/>
+      <!-- Lane markings - 4 lanes -->
+      <rect x="0" y="15" width="100" height="20" fill="#34495e"/>
+      <rect x="0" y="65" width="100" height="20" fill="#34495e"/>
+      <!-- Center divider -->
+      <rect x="0" y="48" width="100" height="4" fill="#f39c12"/>
+      <!-- Lane lines -->
+      <line x1="0" y1="25" x2="100" y2="25" stroke="#ecf0f1" stroke-width="1" stroke-dasharray="10,10"/>
+      <line x1="0" y1="75" x2="100" y2="75" stroke="#ecf0f1" stroke-width="1" stroke-dasharray="10,10"/>
+    </svg>`;
+
+    // Vertical road - 2 lanes in each direction (4 lanes total)
+    this.roadPieceSvgs.vertical = `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+      <!-- Road background -->
+      <rect x="0" y="0" width="100" height="100" fill="#475569"/>
+      <!-- Lane markings - 4 lanes -->
+      <rect x="15" y="0" width="20" height="100" fill="#34495e"/>
+      <rect x="65" y="0" width="20" height="100" fill="#34495e"/>
+      <!-- Center divider -->
+      <rect x="48" y="0" width="4" height="100" fill="#f39c12"/>
+      <!-- Lane lines -->
+      <line x1="25" y1="0" x2="25" y2="100" stroke="#ecf0f1" stroke-width="1" stroke-dasharray="10,10"/>
+      <line x1="75" y1="0" x2="75" y2="100" stroke="#ecf0f1" stroke-width="1" stroke-dasharray="10,10"/>
+    </svg>`;
+
+    // Corner right-up: Road from RIGHT turns UP (┐ shape)
+    this.roadPieceSvgs['corner-right-up'] = `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+      <rect x="0" y="0" width="100" height="100" fill="#475569"/>
+      <!-- Right vertical lanes -->
+      <rect x="65" y="0" width="20" height="50" fill="#34495e"/>
+      <!-- Top horizontal lanes -->
+      <rect x="0" y="15" width="50" height="20" fill="#34495e"/>
+      <!-- Center divider -->
+      <path d="M 50 0 L 50 50 L 100 50" stroke="#f39c12" stroke-width="4" fill="none"/>
+      <!-- Lane markings -->
+      <line x1="25" y1="0" x2="25" y2="50" stroke="#ecf0f1" stroke-width="1" stroke-dasharray="8,8"/>
+      <line x1="0" y1="25" x2="50" y2="25" stroke="#ecf0f1" stroke-width="1" stroke-dasharray="8,8"/>
+    </svg>`;
+
+    // Corner right-down: Road from RIGHT turns DOWN (┘ shape)
+    this.roadPieceSvgs['corner-right-down'] = `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+      <rect x="0" y="0" width="100" height="100" fill="#475569"/>
+      <!-- Right vertical lanes -->
+      <rect x="65" y="50" width="20" height="50" fill="#34495e"/>
+      <!-- Bottom horizontal lanes -->
+      <rect x="0" y="65" width="50" height="20" fill="#34495e"/>
+      <!-- Center divider -->
+      <path d="M 50 100 L 50 50 L 100 50" stroke="#f39c12" stroke-width="4" fill="none"/>
+      <!-- Lane markings -->
+      <line x1="25" y1="50" x2="25" y2="100" stroke="#ecf0f1" stroke-width="1" stroke-dasharray="8,8"/>
+      <line x1="0" y1="75" x2="50" y2="75" stroke="#ecf0f1" stroke-width="1" stroke-dasharray="8,8"/>
+    </svg>`;
+
+    // Corner left-up: Road from LEFT turns UP (┌ shape)
+    this.roadPieceSvgs['corner-left-up'] = `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+      <rect x="0" y="0" width="100" height="100" fill="#475569"/>
+      <!-- Left vertical lanes -->
+      <rect x="15" y="0" width="20" height="50" fill="#34495e"/>
+      <!-- Top horizontal lanes -->
+      <rect x="50" y="15" width="50" height="20" fill="#34495e"/>
+      <!-- Center divider -->
+      <path d="M 0 50 L 50 50 L 50 0" stroke="#f39c12" stroke-width="4" fill="none"/>
+      <!-- Lane markings -->
+      <line x1="75" y1="0" x2="75" y2="50" stroke="#ecf0f1" stroke-width="1" stroke-dasharray="8,8"/>
+      <line x1="50" y1="25" x2="100" y2="25" stroke="#ecf0f1" stroke-width="1" stroke-dasharray="8,8"/>
+    </svg>`;
+
+    // Corner left-down: Road from LEFT turns DOWN (└ shape)
+    this.roadPieceSvgs['corner-left-down'] = `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+      <rect x="0" y="0" width="100" height="100" fill="#475569"/>
+      <!-- Left vertical lanes -->
+      <rect x="15" y="50" width="20" height="50" fill="#34495e"/>
+      <!-- Bottom horizontal lanes -->
+      <rect x="50" y="65" width="50" height="20" fill="#34495e"/>
+      <!-- Center divider -->
+      <path d="M 0 50 L 50 50 L 50 100" stroke="#f39c12" stroke-width="4" fill="none"/>
+      <!-- Lane markings -->
+      <line x1="75" y1="50" x2="75" y2="100" stroke="#ecf0f1" stroke-width="1" stroke-dasharray="8,8"/>
+      <line x1="50" y1="75" x2="100" y2="75" stroke="#ecf0f1" stroke-width="1" stroke-dasharray="8,8"/>
+    </svg>`;
+  },
+
+  setupMakeStartControl() {
+    const checkbox = document.getElementById('makeStartCheckbox');
+    if (!checkbox) return;
+
+    checkbox.addEventListener('change', (e) => {
+      this.makeStartChecked = e.target.checked;
+    });
+  },
+
+  handleGridClick(row, col) {
+    // If no piece selected and not making start, return early
+    if (!this.selectedPiece && !this.makeStartChecked) return;
+
+    const cellData = this.gridData[row][col];
+    const cellEl = cellData.el;
+
+    // Handle Make Start
+    if (this.makeStartChecked) {
+      // Remove start from previous cell
+      if (this.startCell) {
+        const prevCell = this.gridData[this.startCell.row][this.startCell.col];
+        prevCell.el.classList.remove('isStart');
+      }
+
+      // Set new start cell
+      this.startCell = { row, col };
+      cellEl.classList.add('isStart');
+      return;
+    }
+
+    // Place road piece
+    if (this.selectedPiece) {
+      cellData.type = this.selectedPiece;
+      cellEl.classList.add('hasPiece');
+      
+      // Create road piece element
+      const pieceEl = document.createElement('div');
+      pieceEl.className = 'roadPiece';
+      pieceEl.innerHTML = this.roadPieceSvgs[this.selectedPiece];
+      
+      // Clear existing content and add piece
+      cellEl.innerHTML = '';
+      cellEl.appendChild(pieceEl);
+
+      // Re-add start marker if this is the start cell
+      if (this.startCell && this.startCell.row === row && this.startCell.col === col) {
+        cellEl.classList.add('isStart');
+      }
+    }
+  },
+
+  resetTraffic() {
+    this.stopTraffic();
+    this.activeCars.forEach(c => c.el.remove());
+    this.activeCars = [];
+    // Clear grid
+    this.gridData.forEach(row => {
+      row.forEach(cell => {
+        cell.type = null;
+        cell.el.classList.remove('hasPiece', 'isStart');
+        cell.el.innerHTML = '';
+      });
+    });
+    this.startCell = null;
+    const checkbox = document.getElementById('makeStartCheckbox');
+    if (checkbox) checkbox.checked = false;
+    this.makeStartChecked = false;
   }
 };
